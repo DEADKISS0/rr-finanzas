@@ -1,5 +1,20 @@
-import { kv } from '@vercel/kv';
 import { Proyecto, Movimiento, PagoProgramado, FinanzasState, DashboardKPIs } from './types';
+
+// Check if Vercel KV is configured
+const KV_URL = process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+const isKVConfigured = !!(KV_URL && KV_TOKEN);
+
+// Dynamic import for Vercel KV
+async function getKV() {
+  if (!isKVConfigured) return null;
+  try {
+    const { kv } = await import('@vercel/kv');
+    return kv;
+  } catch {
+    return null;
+  }
+}
 
 const KEYS = {
   PROYECTOS: 'rr:proyectos',
@@ -8,16 +23,36 @@ const KEYS = {
   ULTIMA_ACTUALIZACION: 'rr:ultima_actualizacion',
 };
 
+// In-memory fallback (for when KV is not configured)
+let memoryStore: Record<string, unknown> = {};
+
+async function getData<T>(key: string): Promise<T | null> {
+  const kv = await getKV();
+  if (kv) {
+    return kv.get<T>(key);
+  }
+  return (memoryStore[key] as T) || null;
+}
+
+async function setData(key: string, value: unknown): Promise<void> {
+  const kv = await getKV();
+  if (kv) {
+    await kv.set(key, value);
+  } else {
+    memoryStore[key] = value;
+  }
+}
+
 // ============ PROYECTOS ============
 
 export async function getProyectos(): Promise<Proyecto[]> {
-  const data = await kv.get<Proyecto[]>(KEYS.PROYECTOS);
+  const data = await getData<Proyecto[]>(KEYS.PROYECTOS);
   return data || [];
 }
 
 export async function saveProyectos(proyectos: Proyecto[]): Promise<void> {
-  await kv.set(KEYS.PROYECTOS, proyectos);
-  await kv.set(KEYS.ULTIMA_ACTUALIZACION, new Date().toISOString());
+  await setData(KEYS.PROYECTOS, proyectos);
+  await setData(KEYS.ULTIMA_ACTUALIZACION, new Date().toISOString());
 }
 
 export async function addProyecto(proyecto: Proyecto): Promise<Proyecto> {
@@ -48,13 +83,13 @@ export async function deleteProyecto(id: string): Promise<boolean> {
 // ============ MOVIMIENTOS ============
 
 export async function getMovimientos(): Promise<Movimiento[]> {
-  const data = await kv.get<Movimiento[]>(KEYS.MOVIMIENTOS);
+  const data = await getData<Movimiento[]>(KEYS.MOVIMIENTOS);
   return data || [];
 }
 
 export async function saveMovimientos(movimientos: Movimiento[]): Promise<void> {
-  await kv.set(KEYS.MOVIMIENTOS, movimientos);
-  await kv.set(KEYS.ULTIMA_ACTUALIZACION, new Date().toISOString());
+  await setData(KEYS.MOVIMIENTOS, movimientos);
+  await setData(KEYS.ULTIMA_ACTUALIZACION, new Date().toISOString());
 }
 
 export async function addMovimiento(movimiento: Movimiento): Promise<Movimiento> {
@@ -85,13 +120,13 @@ export async function deleteMovimiento(id: string): Promise<boolean> {
 // ============ PAGOS ============
 
 export async function getPagos(): Promise<PagoProgramado[]> {
-  const data = await kv.get<PagoProgramado[]>(KEYS.PAGOS);
+  const data = await getData<PagoProgramado[]>(KEYS.PAGOS);
   return data || [];
 }
 
 export async function savePagos(pagos: PagoProgramado[]): Promise<void> {
-  await kv.set(KEYS.PAGOS, pagos);
-  await kv.set(KEYS.ULTIMA_ACTUALIZACION, new Date().toISOString());
+  await setData(KEYS.PAGOS, pagos);
+  await setData(KEYS.ULTIMA_ACTUALIZACION, new Date().toISOString());
 }
 
 export async function addPago(pago: PagoProgramado): Promise<PagoProgramado> {
@@ -168,13 +203,14 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
 // ============ FULL STATE ============
 
 export async function getFullState(): Promise<FinanzasState> {
-  const [proyectos, movimientos, pagos, kpis, ultima] = await Promise.all([
+  const [proyectos, movimientos, pagos, kpis] = await Promise.all([
     getProyectos(),
     getMovimientos(),
     getPagos(),
     getDashboardKPIs(),
-    kv.get<string>(KEYS.ULTIMA_ACTUALIZACION),
   ]);
+
+  const ultima = await getData<string>(KEYS.ULTIMA_ACTUALIZACION);
 
   return {
     proyectos,
