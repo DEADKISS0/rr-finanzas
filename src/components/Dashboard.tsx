@@ -147,6 +147,7 @@ export default function Dashboard() {
   const [fPago, setFPago] = useState<Partial<Pago>>({});
   const [vistaCal, setVistaCal] = useState<VistaCalendario>('grid');
   const [diaSeleccionado, setDiaSeleccionado] = useState<string|null>(null);
+  const [diaDetalle, setDiaDetalle] = useState<{y:number;m:number;d:number}|null>(null);
 
   useEffect(() => { setState(loadState()); setLoaded(true); }, []);
   const save = (n: Partial<AppState>) => { const u = {...state,...n}; setState(u); saveState(u); };
@@ -166,16 +167,27 @@ export default function Dashboard() {
     }
   };
   
-  const closeModal = () => { setModal(null); setEditId(null); setDiaSeleccionado(null); };
+  const closeModal = () => { 
+    setModal(null); 
+    setEditId(null); 
+    // Si venimos del detalle del día, volver ahí
+    if (diaSeleccionado) {
+      setDiaSeleccionado(null);
+    }
+  };
   
   const saveItem = () => {
     if (modal==='proyecto') { const p={...fProyecto,id:editId||'p_'+genId()} as Proyecto; save({proyectos:editId?state.proyectos.map(x=>x.id===editId?p:x):[...state.proyectos,p]}); }
     if (modal==='movimiento') { const m={...fMov,id:editId||'m_'+genId()} as Movimiento; save({movimientos:editId?state.movimientos.map(x=>x.id===editId?m:x):[...state.movimientos,m]}); }
     if (modal==='pago') { const p={...fPago,id:editId||'pa_'+genId()} as Pago; save({pagos:editId?state.pagos.map(x=>x.id===editId?p:x):[...state.pagos,p]}); }
-    closeModal();
+    setModal(null);
+    setEditId(null);
+    setDiaSeleccionado(null);
+    // Mantener diaDetalle abierto si existe
   };
   
   const del = (t:'proyectos'|'movimientos'|'pagos',id:string) => { if (confirm('¿Eliminar?')) save({[t]:state[t].filter((x:Proyecto|Movimiento|Pago)=>x.id!==id)}); };
+  const delPago = (id:string) => { if (confirm('¿Eliminar este pago?')) save({pagos:state.pagos.filter(p=>p.id!==id)}); };
   const markPagado = (id:string) => save({pagos:state.pagos.map(p=>p.id===id?{...p,estado:'pagado' as EstadoPago}:p)});
 
   const hoy = new Date();
@@ -221,11 +233,22 @@ export default function Dashboard() {
     return py===y && pm===m && pd===d && p.estado!=='pagado';
   });
 
-  // Abrir modal para día específico
+  // Abrir detalle del día
   const clickDia = (y:number,m:number,d:number) => {
-    const f = fecha(y,m,d);
-    setDiaSeleccionado(f);
-    openModal('pago', undefined, f);
+    setDiaDetalle({y,m,d});
+  };
+
+  // Cerrar detalle del día
+  const closeDiaDetalle = () => {
+    setDiaDetalle(null);
+  };
+
+  // Abrir modal para crear pago desde día seleccionado
+  const addPagoDesdeDia = () => {
+    if (diaDetalle) {
+      const f = fecha(diaDetalle.y, diaDetalle.m, diaDetalle.d);
+      openModal('pago', undefined, f);
+    }
   };
 
   const exportExcel = async () => {
@@ -522,7 +545,72 @@ export default function Dashboard() {
         </>}
       </main>
 
-      {/* MODAL */}
+      {/* MODAL DETALLE DEL DÍA */}
+      {diaDetalle && !modal && (() => {
+        const pagosDelDia = getPagosDia(diaDetalle.y, diaDetalle.m, diaDetalle.d);
+        const fechaStr = fecha(diaDetalle.y, diaDetalle.m, diaDetalle.d);
+        const nombreDia = new Date(diaDetalle.y, diaDetalle.m-1, diaDetalle.d).toLocaleDateString('es-CO', {weekday:'long', day:'numeric', month:'long'});
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 modal-backdrop" onClick={closeDiaDetalle}>
+            <div className={`${card} border ${bd} rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto modal-content shadow-2xl`} onClick={e=>e.stopPropagation()}>
+              <div className={`p-6 border-b ${bd} flex justify-between items-center`}>
+                <div>
+                  <h3 className={`text-base font-bold capitalize ${t}`}>{nombreDia}</h3>
+                  <p className={`text-xs ${t3} mt-1`}>{pagosDelDia.length} pago{pagosDelDia.length!==1?'s':''} programado{pagosDelDia.length!==1?'s':''}</p>
+                </div>
+                <button onClick={closeDiaDetalle} className={`w-8 h-8 rounded-lg flex items-center justify-center ${dark?'bg-white/5 hover:bg-white/10':'bg-gray-100 hover:bg-gray-200'} ${t2} transition-colors`}>✕</button>
+              </div>
+              
+              {pagosDelDia.length > 0 ? (
+                <div className="divide-y divide-white/[0.04]">
+                  {pagosDelDia.map(p => (
+                    <div key={p.id} className="px-6 py-4 flex items-center gap-4 hover:bg-white/[0.02] transition-colors cursor-pointer group" onClick={() => openModal('pago', p)}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${p.tipo==='ingreso'?'bg-green-500/10 text-green-400':'bg-red-500/10 text-red-400'}`}>
+                        <span className="text-lg">{p.tipo==='ingreso'?'↑':'↓'}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium ${t} truncate`}>{p.concepto}</p>
+                        <p className={`text-xs ${t3}`}>
+                          {p.proyecto_id ? state.proyectos.find(pr=>pr.id===p.proyecto_id)?.nombre || p.proyecto_id : 'Sin proyecto'}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className={`text-sm font-bold ${p.tipo==='ingreso'?'text-green-400':'text-red-400'}`}>{p.tipo==='ingreso'?'+':'-'}{fmt(p.monto)}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.estado==='pagado'?'bg-green-500/10 text-green-400':p.fecha<hoyStr?'bg-red-500/10 text-red-400':'bg-yellow-500/10 text-yellow-400'}`}>{p.estado==='pagado'?'pagado':p.fecha<hoyStr?'vencido':p.estado}</span>
+                          {p.estado!=='pagado' && <button onClick={e=>{e.stopPropagation();markPagado(p.id)}} className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors btn-press">✓</button>}
+                        </div>
+                      </div>
+                      <div className={`w-6 h-6 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${dark?'bg-white/5':'bg-gray-100'}`}>
+                        <span className={`text-xs ${t3}`}>✏️</span>
+                      </div>
+                      <button onClick={e=>{e.stopPropagation();delPago(p.id)}} className={`w-6 h-6 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-red-500/10 text-red-400 hover:bg-red-500/20`}>
+                        <span className="text-xs">🗑</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="px-6 py-12 text-center">
+                  <div className={`w-16 h-16 rounded-2xl ${dark?'bg-white/5':'bg-gray-100'} flex items-center justify-center mx-auto mb-4`}>
+                    <span className="text-2xl">📅</span>
+                  </div>
+                  <p className={`text-sm ${t2} mb-1`}>Sin pagos este día</p>
+                  <p className={`text-xs ${t3}`}>Crea un nuevo pago para esta fecha</p>
+                </div>
+              )}
+
+              <div className={`p-6 border-t ${bd}`}>
+                <button onClick={addPagoDesdeDia} className="w-full px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white btn-press shadow-lg shadow-red-500/20 hover:from-red-600 hover:to-red-700 transition-all">
+                  + Agregar Pago
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* MODAL EDITAR/CREAR */}
       {modal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 modal-backdrop">
           <div className={`${card} border ${bd} rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto modal-content shadow-2xl`}>
