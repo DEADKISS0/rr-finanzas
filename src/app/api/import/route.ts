@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
     const proyectosWs = wb.Sheets['Proyectos'] || wb.Sheets['proyectos'];
     const proyectos: Proyecto[] = [];
     if (proyectosWs) {
-      const rows = XLSX.utils.sheet_to_json(proyectosWs);
-      rows.forEach((row: Record<string, unknown>) => {
+      const rows = XLSX.utils.sheet_to_json(proyectosWs) as Record<string, unknown>[];
+      rows.forEach((row) => {
         proyectos.push({
           id: String(row['ID'] || `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
           nombre: String(row['Nombre'] || row['nombre'] || ''),
@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
     const movimientosWs = wb.Sheets['Movimientos'] || wb.Sheets['movimientos'];
     const movimientos: Movimiento[] = [];
     if (movimientosWs) {
-      const rows = XLSX.utils.sheet_to_json(movimientosWs);
-      rows.forEach((row: Record<string, unknown>) => {
+      const rows = XLSX.utils.sheet_to_json(movimientosWs) as Record<string, unknown>[];
+      rows.forEach((row) => {
         movimientos.push({
           id: String(row['ID'] || `mov_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
           proyecto_id: String(row['Proyecto ID'] || row['proyecto_id'] || ''),
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
     const pagosWs = wb.Sheets['Pagos Programados'] || wb.Sheets['pagos'];
     const pagos: PagoProgramado[] = [];
     if (pagosWs) {
-      const rows = XLSX.utils.sheet_to_json(pagosWs);
-      rows.forEach((row: Record<string, unknown>) => {
+      const rows = XLSX.utils.sheet_to_json(pagosWs) as Record<string, unknown>[];
+      rows.forEach((row) => {
         pagos.push({
           id: String(row['ID'] || `pago_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
           proyecto_id: String(row['Proyecto ID'] || row['proyecto_id'] || ''),
