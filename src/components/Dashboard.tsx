@@ -443,11 +443,6 @@ export default function Dashboard() {
         padding: 12,
         cornerRadius: 12,
         displayColors: false,
-        callbacks: {
-          label: function(tooltipItem: { parsed?: { y?: number | null }; raw?: number }) {
-            return formatCOP(tooltipItem.parsed?.y ?? tooltipItem.raw ?? 0);
-          }
-        }
       }
     },
     scales: {
@@ -458,11 +453,11 @@ export default function Dashboard() {
       },
       y: { 
         grid: { color: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }, 
-        ticks: { color: darkMode ? '#4b5563' : '#9ca3af', callback: (v: unknown) => formatCOP(v as number), font: { size: 11 } },
+        ticks: { color: darkMode ? '#4b5563' : '#9ca3af', font: { size: 11 } },
         border: { display: false }
       }
     }
-  };
+  } as const;
 
   const semaforoColor = runway >= 8 ? 'text-green-400' : runway >= 4 ? 'text-yellow-400' : 'text-red-400';
   const semaforoBg = runway >= 8 ? 'bg-green-500/10' : runway >= 4 ? 'bg-yellow-500/10' : 'bg-red-500/10';
