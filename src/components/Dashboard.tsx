@@ -444,7 +444,9 @@ export default function Dashboard() {
         cornerRadius: 12,
         displayColors: false,
         callbacks: {
-          label: (ctx: { parsed?: { y?: number }; raw?: number }) => formatCOP(ctx.parsed?.y ?? ctx.raw ?? 0),
+          label: function(tooltipItem: { parsed?: { y?: number | null }; raw?: number }) {
+            return formatCOP(tooltipItem.parsed?.y ?? tooltipItem.raw ?? 0);
+          }
         }
       }
     },
