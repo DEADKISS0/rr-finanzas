@@ -40,52 +40,60 @@ interface Pago {
   proyecto_id: string;
 }
 
-// ============ INITIAL DATA (REAL STATE AS OF AUG 2026) ============
-// NO se ha hecho ningún pago aún. Solo hay contrato y adelantos pendientes.
+// ============ INITIAL DATA (REAL STATE AS OF AUG 15, 2026) ============
 
 const INITIAL_PROYECTOS: Proyecto[] = [
-  { id: 'wunder', nombre: 'Wunder', cliente: 'Wunder', estado: 'activo', valor_total: 9000000, valor_pagado: 0, fecha_inicio: '2026-07-01', fecha_fin: '2026-12-31', descripcion: 'Marketing digital completo: video, diseño, redes, web, pauta, SEO. Retroactivo día 60.', servicios: ['Producción Video', 'Piezas Gráficas', 'Branding', 'Gestión Redes', 'Desarrollo Web', 'Pauta', 'SEO'] },
-  { id: 'boga', nombre: 'BOGA', cliente: 'BOGA', estado: 'activo', valor_total: 1200000, valor_pagado: 0, fecha_inicio: '2026-07-15', fecha_fin: '2026-09-30', descripcion: 'Setup completo. Adelanto pendiente de pago.', servicios: ['Branding', 'Producción Video', 'Diseño', 'Redes', 'Web', 'Pauta', 'SEO'] },
+  // PROYECTOS ACTIVOS
+  { id: 'wunder', nombre: 'Wunder', cliente: 'Wunder', estado: 'activo', valor_total: 9000000, valor_pagado: 0, fecha_inicio: '2026-07-01', fecha_fin: '2026-12-31', descripcion: 'Marketing digital completo. Onboarding terminado. Grabación próximo fin de semana.', servicios: ['Producción Video', 'Piezas Gráficas', 'Branding', 'Gestión Redes', 'Desarrollo Web', 'Pauta', 'SEO'] },
+  { id: 'boga', nombre: 'BOGA', cliente: 'BOGA', estado: 'activo', valor_total: 1200000, valor_pagado: 0, fecha_inicio: '2026-07-15', fecha_fin: '2026-09-30', descripcion: 'Setup completo. Adelanto 50% pendiente.', servicios: ['Branding', 'Producción Video', 'Diseño', 'Redes', 'Web', 'Pauta', 'SEO'] },
   { id: 'zapatos', nombre: 'ZAPATOS', cliente: 'ZAPATOS', estado: 'activo', valor_total: 900000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-10-31', descripcion: 'Mismo esquema que Wunder. 15-30 días después.', servicios: ['Producción Video', 'Piezas Gráficas', 'Branding', 'Gestión Redes', 'Desarrollo Web', 'Pauta', 'SEO'] },
-  { id: 'amsterdam1', nombre: 'AMSTERDAM #1', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido. Sin pricing final.', servicios: ['Producción Video', 'Diseño'] },
-  { id: 'amsterdam2', nombre: 'AMSTERDAM #2', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido. Sin pricing final.', servicios: ['Producción Video', 'Diseño'] },
-  { id: 'amsterdam3', nombre: 'AMSTERDAM #3', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido. Sin pricing final.', servicios: ['Producción Video', 'Diseño'] },
-  { id: 'globos', nombre: 'GLOBOS', cliente: 'GLOBOS', estado: 'activo', valor_total: 1200000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-10-31', descripcion: 'Servicios de marketing. Sin pricing final.', servicios: ['Producción Video', 'Diseño', 'Redes'] },
-  { id: 'flores', nombre: 'FLORES', cliente: 'FLORES', estado: 'planificacion', valor_total: 0, valor_pagado: 0, fecha_inicio: '2026-09-01', fecha_fin: '2026-12-31', descripcion: 'En conversación. Sin pricing definido.', servicios: [] },
+  { id: 'amsterdam1', nombre: 'AMSTERDAM #1', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido.', servicios: ['Producción Video', 'Diseño'] },
+  { id: 'amsterdam2', nombre: 'AMSTERDAM #2', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido.', servicios: ['Producción Video', 'Diseño'] },
+  { id: 'amsterdam3', nombre: 'AMSTERDAM #3', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido.', servicios: ['Producción Video', 'Diseño'] },
+  { id: 'globos', nombre: 'GLOBOS', cliente: 'GLOBOS', estado: 'activo', valor_total: 1200000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-10-31', descripcion: 'Servicios de marketing.', servicios: ['Producción Video', 'Diseño', 'Redes'] },
+  // NUEVO - Sátiro Sushi
+  { id: 'satiro', nombre: 'Sátiro Sushi', cliente: 'Sátiro Sushi', estado: 'activo', valor_total: 6000000, valor_pagado: 0, fecha_inicio: '2026-09-01', fecha_fin: '2026-12-31', descripcion: 'App restaurante: pedidos domicilio, mesa, pagos Wompi. 30 cuotas de $400K.', servicios: ['Desarrollo Web', 'App Móvil', 'Integración Pagos'] },
+  // PROSPECTOS / PLANIFICACIÓN
+  { id: 'prospecto1', nombre: 'Prospecto A', cliente: 'Por definir', estado: 'planificacion', valor_total: 0, valor_pagado: 0, fecha_inicio: '2026-09-15', fecha_fin: '2026-12-31', descripcion: 'En fase de prototipo.', servicios: [] },
+  { id: 'prospecto2', nombre: 'Prospecto B', cliente: 'Por definir', estado: 'planificacion', valor_total: 0, valor_pagado: 0, fecha_inicio: '2026-09-15', fecha_fin: '2026-12-31', descripcion: 'En fase de prototipo.', servicios: [] },
+  // DESARROLLO INTERNO
+  { id: 'rraliados', nombre: 'RR ALIADOS (Interno)', cliente: 'RR ALIADOS', estado: 'activo', valor_total: 0, valor_pagado: 0, fecha_inicio: '2026-07-01', fecha_fin: '2026-12-31', descripcion: 'Proyecto interno. Evaluar si cancelar para liquidez.', servicios: [] },
+  { id: 'sistema', nombre: 'Sistema Financiero', cliente: 'RR ALIADOS', estado: 'activo', valor_total: 0, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-08-31', descripcion: 'Dashboard interno. Desarrollo completado.', servicios: ['Desarrollo Web'] },
 ];
 
-// Solo el movimiento real: saldo inicial en Bancolombia
+// Saldo actual: $3,500,000 (agosto 15, 2026)
 const INITIAL_MOVIMIENTOS: Movimiento[] = [
-  { id: 'mov001', tipo: 'ingreso', concepto: 'Saldo inicial Bancolombia', monto: 3600000, fecha: '2026-07-15', categoria: 'saldo', proyecto_id: '' },
+  { id: 'mov001', tipo: 'ingreso', concepto: 'Saldo Bancolombia (actualizado)', monto: 3500000, fecha: '2026-08-15', categoria: 'saldo', proyecto_id: '' },
 ];
 
-// Pagos programados (Ninguno se ha ejecutado aún)
+// Pagos programados - Estado real agosto 2026
 const INITIAL_PAGOS: Pago[] = [
-  // BOGA - Adelanto pendiente
+  // === PRÓXIMOS INGRESOS ===
   { id: 'pago001', concepto: 'BOGA - Adelanto 50%', monto: 600000, fecha: '2026-08-20', estado: 'pendiente', tipo: 'ingreso', proyecto_id: 'boga' },
-  { id: 'pago002', concepto: 'BOGA - Pago saldo 50%', monto: 600000, fecha: '2026-09-05', estado: 'programado', tipo: 'ingreso', proyecto_id: 'boga' },
-  // Wunder - Primer desembolso
-  { id: 'pago010', concepto: 'Wunder - Producción Q1 (video+foto+diseño)', monto: 746000, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago011', concepto: 'Wunder - Desarrollo web 25%', monto: 472500, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago012', concepto: 'Wunder - Pauta publicitaria 50%', monto: 300000, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago013', concepto: 'Wunder - SEO & GEO 50%', monto: 150000, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
-  // Wunder - Segundo desembolso
-  { id: 'pago014', concepto: 'Wunder - Producción Q2', monto: 746000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago015', concepto: 'Wunder - Desarrollo web 25%', monto: 472500, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago016', concepto: 'Wunder - Pauta 50%', monto: 300000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago017', concepto: 'Wunder - SEO 50%', monto: 150000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  // AMSTERDAM - Ingresos esperados
-  { id: 'pago020', concepto: 'AMSTERDAM #1 - Adelanto', monto: 1000000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam1' },
-  { id: 'pago021', concepto: 'AMSTERDAM #2 - Adelanto', monto: 1000000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam2' },
-  { id: 'pago022', concepto: 'AMSTERDAM #3 - Adelanto', monto: 1000000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam3' },
-  // AMSTERDAM - Egresos estimados
-  { id: 'pago023', concepto: 'AMSTERDAM #1 - Producción video', monto: 500000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam1' },
-  { id: 'pago024', concepto: 'AMSTERDAM #2 - Producción video', monto: 500000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam2' },
-  { id: 'pago025', concepto: 'AMSTERDAM #3 - Producción video', monto: 500000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam3' },
-  // GLOBOS
-  { id: 'pago030', concepto: 'GLOBOS - Adelanto', monto: 600000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'globos' },
-  { id: 'pago031', concepto: 'GLOBOS - Producción', monto: 300000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'globos' },
-  // Pagos fijos empresa
+  { id: 'pago002', concepto: 'BOGA - Saldo 50%', monto: 600000, fecha: '2026-09-05', estado: 'programado', tipo: 'ingreso', proyecto_id: 'boga' },
+  { id: 'pago003', concepto: 'Sátiro Sushi - Cuota 1/30', monto: 400000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'satiro' },
+  { id: 'pago004', concepto: 'Sátiro Sushi - Cuota 2/30', monto: 400000, fecha: '2026-10-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'satiro' },
+  { id: 'pago005', concepto: 'Sátiro Sushi - Cuota 3/30', monto: 400000, fecha: '2026-11-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'satiro' },
+  { id: 'pago006', concepto: 'AMSTERDAM #1 - Adelanto', monto: 1000000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam1' },
+  { id: 'pago007', concepto: 'AMSTERDAM #2 - Adelanto', monto: 1000000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam2' },
+  { id: 'pago008', concepto: 'AMSTERDAM #3 - Adelanto', monto: 1000000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam3' },
+  { id: 'pago009', concepto: 'GLOBOS - Adelanto', monto: 600000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'globos' },
+  
+  // === PRÓXIMOS EGRESOS - WUNDER ===
+  { id: 'pago020', concepto: 'Wunder - Producción Q1 (grabación)', monto: 746000, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago021', concepto: 'Wunder - Desarrollo web 25%', monto: 472500, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago022', concepto: 'Wunder - Pauta 50%', monto: 300000, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago023', concepto: 'Wunder - SEO 50%', monto: 150000, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago024', concepto: 'Wunder - Producción Q2', monto: 746000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago025', concepto: 'Wunder - Desarrollo web 25%', monto: 472500, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  
+  // === EGRESOS - OTROS PROYECTOS ===
+  { id: 'pago030', concepto: 'AMSTERDAM #1 - Producción', monto: 500000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam1' },
+  { id: 'pago031', concepto: 'AMSTERDAM #2 - Producción', monto: 500000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam2' },
+  { id: 'pago032', concepto: 'AMSTERDAM #3 - Producción', monto: 500000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam3' },
+  { id: 'pago033', concepto: 'GLOBOS - Producción', monto: 300000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'globos' },
+  
+  // === PAGOS FIJOS EMPRESA ===
   { id: 'pago040', concepto: 'Manuel - Quincena 1', monto: 200000, fecha: '2026-08-15', estado: 'pendiente', tipo: 'egreso', proyecto_id: '' },
   { id: 'pago041', concepto: 'Samuel - Quincena 1', monto: 100000, fecha: '2026-08-15', estado: 'pendiente', tipo: 'egreso', proyecto_id: '' },
   { id: 'pago042', concepto: 'Manuel - Quincena 2', monto: 200000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
@@ -94,10 +102,14 @@ const INITIAL_PAGOS: Pago[] = [
   { id: 'pago045', concepto: 'Samuel - Quincena 3', monto: 100000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
   { id: 'pago046', concepto: 'Manuel - Quincena 4', monto: 200000, fecha: '2026-09-30', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
   { id: 'pago047', concepto: 'Samuel - Quincena 4', monto: 100000, fecha: '2026-09-30', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
+  
+  // === PRÓXIMOS EGRESOS - SÁTIRO SUSHI ===
+  { id: 'pago050', concepto: 'Sátiro - Desarrollo inicio', monto: 500000, fecha: '2026-09-01', estado: 'programado', tipo: 'egreso', proyecto_id: 'satiro' },
+  { id: 'pago051', concepto: 'Sátiro - Desarrollo F2', monto: 500000, fecha: '2026-10-01', estado: 'programado', tipo: 'egreso', proyecto_id: 'satiro' },
 ];
 
 // ============ LOCAL STORAGE ============
-const STORAGE_KEY = 'rr-finanzas-v3';
+const STORAGE_KEY = 'rr-finanzas-v4';
 
 interface AppState {
   proyectos: Proyecto[];
