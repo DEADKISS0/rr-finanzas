@@ -1,452 +1,589 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, Filler } from 'chart.js';
-import { Line, Doughnut } from 'react-chartjs-2';
-import type { Proyecto, Movimiento, PagoProgramado, DashboardKPIs, FinanzasState, EstadoProyecto, TipoMovimiento, CategoriaMovimiento, EstadoPago } from '@/lib/types';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, Filler);
+// ============ TYPES ============
+type EstadoProyecto = 'planificacion' | 'activo' | 'pausado' | 'completado' | 'cancelado';
+type TipoMovimiento = 'ingreso' | 'egreso';
+type EstadoPago = 'pendiente' | 'programado' | 'pagado' | 'vencido';
 
-type Tab = 'dashboard' | 'proyectos' | 'movimientos' | 'pagos' | 'calendario';
-type ModalType = 'proyecto' | 'movimiento' | 'pago' | null;
+interface Proyecto {
+  id: string;
+  nombre: string;
+  cliente: string;
+  estado: EstadoProyecto;
+  valor_total: number;
+  valor_pagado: number;
+  fecha_inicio: string;
+  fecha_fin: string;
+  descripcion: string;
+}
 
-const formatCOP = (v: number) => '$' + Number(v || 0).toLocaleString('es-CO', { maximumFractionDigits: 0 });
-const formatDate = (d: string) => {
-  if (!d) return '--';
-  try { return new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return d; }
-};
+interface Movimiento {
+  id: string;
+  tipo: TipoMovimiento;
+  concepto: string;
+  monto: number;
+  fecha: string;
+  categoria: string;
+  proyecto_id: string;
+}
 
-const ESTADO_COLORS: Record<string, string> = {
-  planificacion: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  activo: 'bg-green-500/10 text-green-400 border-green-500/20',
-  pausado: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-  completado: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  cancelado: 'bg-red-500/10 text-red-400 border-red-500/20',
-  pendiente: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-  programado: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  pagado: 'bg-green-500/10 text-green-400 border-green-500/20',
-  vencido: 'bg-red-500/10 text-red-400 border-red-500/20',
-};
+interface Pago {
+  id: string;
+  concepto: string;
+  monto: number;
+  fecha: string;
+  estado: EstadoPago;
+  tipo: 'ingreso' | 'egreso';
+  proyecto_id: string;
+}
 
-const CATEGORIAS: { value: CategoriaMovimiento; label: string }[] = [
-  { value: 'servicios', label: 'Servicios' },
-  { value: 'produccion', label: 'Producción' },
-  { value: 'desarrollo', label: 'Desarrollo' },
-  { value: 'marketing', label: 'Marketing' },
-  { value: 'operaciones', label: 'Operaciones' },
-  { value: 'personal', label: 'Personal' },
-  { value: 'proveedores', label: 'Proveedores' },
-  { value: 'impuestos', label: 'Impuestos' },
-  { value: 'alquiler', label: 'Alquiler' },
-  { value: 'servicios_publicos', label: 'Servicios Públicos' },
-  { value: 'software', label: 'Software' },
-  { value: 'otros', label: 'Otros' },
+// ============ INITIAL DATA FROM EXCEL ============
+const INITIAL_PROYECTOS: Proyecto[] = [
+  { id: 'wunder', nombre: 'Wunder', cliente: 'Wunder', estado: 'activo', valor_total: 9000000, valor_pagado: 0, fecha_inicio: '2026-07-01', fecha_fin: '2026-12-31', descripcion: 'Servicios de marketing digital completos: video, diseño, redes, web, pauta, SEO' },
+  { id: 'boga', nombre: 'BOGA', cliente: 'BOGA', estado: 'activo', valor_total: 1200000, valor_pagado: 600000, fecha_inicio: '2026-07-15', fecha_fin: '2026-09-30', descripcion: 'Setup completo: branding, video, diseño, redes, web, pauta, SEO' },
+  { id: 'zapatos', nombre: 'ZAPATOS', cliente: 'ZAPATOS', estado: 'activo', valor_total: 900000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-10-31', descripcion: 'Mismo esquema que Wunder, 15-30 días después' },
+  { id: 'amsterdam1', nombre: 'AMSTERDAM #1', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 1000000, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido' },
+  { id: 'amsterdam2', nombre: 'AMSTERDAM #2', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 1000000, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido' },
+  { id: 'amsterdam3', nombre: 'AMSTERDAM #3', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 1000000, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido' },
+  { id: 'globos', nombre: 'GLOBOS', cliente: 'GLOBOS', estado: 'activo', valor_total: 1200000, valor_pagado: 600000, fecha_inicio: '2026-08-01', fecha_fin: '2026-10-31', descripcion: 'Servicios de marketing' },
+  { id: 'rraliados', nombre: 'RR ALIADOS (Interno)', cliente: 'RR ALIADOS', estado: 'activo', valor_total: 0, valor_pagado: 0, fecha_inicio: '2026-07-01', fecha_fin: '2026-12-31', descripcion: 'Proyecto interno - solo costos externos, margen 0%' },
 ];
 
+const INITIAL_MOVIMIENTOS: Movimiento[] = [
+  // Saldo inicial
+  { id: 'mov001', tipo: 'ingreso', concepto: 'Saldo Bancolombia', monto: 2800000, fecha: '2026-07-15', categoria: 'saldo', proyecto_id: '' },
+  // BOGA ingresos
+  { id: 'mov002', tipo: 'ingreso', concepto: 'BOGA - Adelanto 50%', monto: 600000, fecha: '2026-07-30', categoria: 'servicios', proyecto_id: 'boga' },
+  // AMSTERDAM ingresos
+  { id: 'mov003', tipo: 'ingreso', concepto: 'AMSTERDAM #1 - Adelanto', monto: 1000000, fecha: '2026-08-30', categoria: 'servicios', proyecto_id: 'amsterdam1' },
+  { id: 'mov004', tipo: 'ingreso', concepto: 'AMSTERDAM #2 - Adelanto', monto: 1000000, fecha: '2026-08-30', categoria: 'servicios', proyecto_id: 'amsterdam2' },
+  { id: 'mov005', tipo: 'ingreso', concepto: 'AMSTERDAM #3 - Adelanto', monto: 1000000, fecha: '2026-08-30', categoria: 'servicios', proyecto_id: 'amsterdam3' },
+  { id: 'mov006', tipo: 'ingreso', concepto: 'GLOBOS - Adelanto', monto: 600000, fecha: '2026-08-30', categoria: 'servicios', proyecto_id: 'globos' },
+  // Wunder egresos Jul
+  { id: 'mov010', tipo: 'egreso', concepto: 'Wunder - 50% Branding', monto: 150000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
+  { id: 'mov011', tipo: 'egreso', concepto: 'Wunder - 2 Sesiones camarógrafo', monto: 120000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
+  { id: 'mov012', tipo: 'egreso', concepto: 'Wunder - 2 Sesiones Supervisor', monto: 100000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
+  { id: 'mov013', tipo: 'egreso', concepto: 'Wunder - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
+  { id: 'mov014', tipo: 'egreso', concepto: 'Wunder - 6 Ediciones video', monto: 150000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
+  { id: 'mov015', tipo: 'egreso', concepto: 'Wunder - 6 Portadas Reel', monto: 60000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
+  { id: 'mov016', tipo: 'egreso', concepto: 'Wunder - 2 Sesiones logística', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
+  { id: 'mov017', tipo: 'egreso', concepto: 'Wunder - 6 Piezas Gráficas', monto: 66000, fecha: '2026-08-15', categoria: 'diseno', proyecto_id: 'wunder' },
+  { id: 'mov018', tipo: 'egreso', concepto: 'Wunder - 18 Publicaciones', monto: 150000, fecha: '2026-08-15', categoria: 'redes', proyecto_id: 'wunder' },
+  { id: 'mov019', tipo: 'egreso', concepto: 'Wunder - 25% Landing Page', monto: 160000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'wunder' },
+  { id: 'mov020', tipo: 'egreso', concepto: 'Wunder - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'wunder' },
+  { id: 'mov021', tipo: 'egreso', concepto: 'Wunder - 25% CRM', monto: 175000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'wunder' },
+  { id: 'mov022', tipo: 'egreso', concepto: 'Wunder - 50% Pauta', monto: 300000, fecha: '2026-08-15', categoria: 'marketing', proyecto_id: 'wunder' },
+  { id: 'mov023', tipo: 'egreso', concepto: 'Wunder - 50% SEO & GEO', monto: 150000, fecha: '2026-08-15', categoria: 'marketing', proyecto_id: 'wunder' },
+  // BOGA egresos
+  { id: 'mov030', tipo: 'egreso', concepto: 'BOGA - 1 Sesión camarógrafo', monto: 60000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
+  { id: 'mov031', tipo: 'egreso', concepto: 'BOGA - 1 Sesión Supervisor', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
+  { id: 'mov032', tipo: 'egreso', concepto: 'BOGA - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
+  { id: 'mov033', tipo: 'egreso', concepto: 'BOGA - 3 Ediciones video', monto: 75000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
+  { id: 'mov034', tipo: 'egreso', concepto: 'BOGA - 3 Portadas Reel', monto: 30000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
+  { id: 'mov035', tipo: 'egreso', concepto: 'BOGA - 1 Sesión logística', monto: 25000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
+  { id: 'mov036', tipo: 'egreso', concepto: 'BOGA - 25% Landing Page', monto: 160000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'boga' },
+  { id: 'mov037', tipo: 'egreso', concepto: 'BOGA - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'boga' },
+  { id: 'mov038', tipo: 'egreso', concepto: 'BOGA - 25% CRM', monto: 175000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'boga' },
+  // RR Aliados egresos
+  { id: 'mov040', tipo: 'egreso', concepto: 'RR Aliados - 50% Branding', monto: 150000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
+  { id: 'mov041', tipo: 'egreso', concepto: 'RR Aliados - 2 Sesiones camarógrafo', monto: 120000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
+  { id: 'mov042', tipo: 'egreso', concepto: 'RR Aliados - 2 Sesiones Supervisor', monto: 100000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
+  { id: 'mov043', tipo: 'egreso', concepto: 'RR Aliados - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
+  { id: 'mov044', tipo: 'egreso', concepto: 'RR Aliados - 6 Ediciones video', monto: 150000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
+  { id: 'mov045', tipo: 'egreso', concepto: 'RR Aliados - 6 Portadas Reel', monto: 60000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
+  { id: 'mov046', tipo: 'egreso', concepto: 'RR Aliados - 2 Sesiones logística', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
+  { id: 'mov047', tipo: 'egreso', concepto: 'RR Aliados - 6 Piezas Gráficas', monto: 66000, fecha: '2026-08-15', categoria: 'diseno', proyecto_id: 'rraliados' },
+  { id: 'mov048', tipo: 'egreso', concepto: 'RR Aliados - 25% Landing Page', monto: 160000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'rraliados' },
+  { id: 'mov049', tipo: 'egreso', concepto: 'RR Aliados - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'rraliados' },
+  { id: 'mov050', tipo: 'egreso', concepto: 'RR Aliados - 25% CRM', monto: 175000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'rraliados' },
+  { id: 'mov051', tipo: 'egreso', concepto: 'RR Aliados - 50% Pauta', monto: 300000, fecha: '2026-08-15', categoria: 'marketing', proyecto_id: 'rraliados' },
+];
+
+const INITIAL_PAGOS: Pago[] = [
+  // Ingresos programados
+  { id: 'pago001', concepto: 'BOGA - Pago saldo 50%', monto: 600000, fecha: '2026-08-30', estado: 'programado', tipo: 'ingreso', proyecto_id: 'boga' },
+  { id: 'pago002', concepto: 'GLOBOS - Pago saldo', monto: 600000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'globos' },
+  { id: 'pago003', concepto: 'AMSTERDAM #1 - Pago saldo', monto: 1000000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam1' },
+  { id: 'pago004', concepto: 'AMSTERDAM #2 - Pago saldo', monto: 1000000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam2' },
+  { id: 'pago005', concepto: 'AMSTERDAM #3 - Pago saldo', monto: 1000000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam3' },
+  { id: 'pago006', concepto: 'BOGA - Mantenimiento mensual', monto: 150000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'boga' },
+  // Egresos programados Wunder Q2
+  { id: 'pago010', concepto: 'Wunder - 50% Branding', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago011', concepto: 'Wunder - 2 Sesiones camarógrafo', monto: 120000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago012', concepto: 'Wunder - 2 Sesiones Supervisor', monto: 100000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago013', concepto: 'Wunder - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago014', concepto: 'Wunder - 6 Ediciones video', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago015', concepto: 'Wunder - 6 Portadas Reel', monto: 60000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago016', concepto: 'Wunder - 2 Sesiones logística', monto: 50000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago017', concepto: 'Wunder - 6 Piezas Gráficas', monto: 66000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago018', concepto: 'Wunder - 18 Publicaciones', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago019', concepto: 'Wunder - 25% Landing Page', monto: 160000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago020', concepto: 'Wunder - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago021', concepto: 'Wunder - 25% CRM', monto: 175000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago022', concepto: 'Wunder - 50% Pauta', monto: 300000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago023', concepto: 'Wunder - 50% SEO & GEO', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  // Egresos ZAPATOS
+  { id: 'pago030', concepto: 'ZAPATOS - 50% Branding', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago031', concepto: 'ZAPATOS - 2 Sesiones camarógrafo', monto: 120000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago032', concepto: 'ZAPATOS - 2 Sesiones Supervisor', monto: 100000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago033', concepto: 'ZAPATOS - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago034', concepto: 'ZAPATOS - 6 Ediciones video', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago035', concepto: 'ZAPATOS - 6 Portadas Reel', monto: 60000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago036', concepto: 'ZAPATOS - 2 Sesiones logística', monto: 50000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago037', concepto: 'ZAPATOS - 6 Piezas Gráficas', monto: 66000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago038', concepto: 'ZAPATOS - 18 Publicaciones', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago039', concepto: 'ZAPATOS - 25% Landing Page', monto: 160000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago040', concepto: 'ZAPATOS - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago041', concepto: 'ZAPATOS - 25% CRM', monto: 175000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago042', concepto: 'ZAPATOS - 50% Pauta', monto: 300000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  { id: 'pago043', concepto: 'ZAPATOS - 50% SEO & GEO', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
+  // Egresos BOGA Q2
+  { id: 'pago050', concepto: 'BOGA - 25% Landing Page', monto: 160000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'boga' },
+  { id: 'pago051', concepto: 'BOGA - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'boga' },
+  { id: 'pago052', concepto: 'BOGA - 25% CRM', monto: 175000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'boga' },
+  // Egresos AMSTERDAM Sep
+  { id: 'pago060', concepto: 'AMSTERDAM #1 - Producción video', monto: 290000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam1' },
+  { id: 'pago061', concepto: 'AMSTERDAM #1 - Desarrollo web', monto: 472500, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam1' },
+  { id: 'pago062', concepto: 'AMSTERDAM #2 - Producción video', monto: 290000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam2' },
+  { id: 'pago063', concepto: 'AMSTERDAM #2 - Desarrollo web', monto: 472500, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam2' },
+  { id: 'pago064', concepto: 'AMSTERDAM #3 - Producción video', monto: 290000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam3' },
+  { id: 'pago065', concepto: 'AMSTERDAM #3 - Desarrollo web', monto: 472500, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam3' },
+];
+
+// ============ LOCAL STORAGE ============
+const STORAGE_KEY = 'rr-finanzas-v2';
+
+interface AppState {
+  proyectos: Proyecto[];
+  movimientos: Movimiento[];
+  pagos: Pago[];
+  initialized: boolean;
+}
+
+function loadState(): AppState {
+  if (typeof window === 'undefined') return { proyectos: INITIAL_PROYECTOS, movimientos: INITIAL_MOVIMIENTOS, pagos: INITIAL_PAGOS, initialized: false };
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try { return JSON.parse(saved); } catch { /* ignore */ }
+  }
+  return { proyectos: INITIAL_PROYECTOS, movimientos: INITIAL_MOVIMIENTOS, pagos: INITIAL_PAGOS, initialized: true };
+}
+
+function saveState(state: AppState) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// ============ HELPERS ============
+const fmt = (v: number) => '$' + Number(v || 0).toLocaleString('es-CO', { maximumFractionDigits: 0 });
+const fmtDate = (d: string) => {
+  if (!d) return '--';
+  try { return new Date(d + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: '2-digit' }); } catch { return d; }
+};
+const genId = () => Math.random().toString(36).substr(2, 9);
+
+// ============ COMPONENT ============
 export default function Dashboard() {
-  const [state, setState] = useState<FinanzasState | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>('dashboard');
-  const [modal, setModal] = useState<ModalType>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [state, setState] = useState<AppState>({ proyectos: [], movimientos: [], pagos: [], initialized: false });
+  const [tab, setTab] = useState<'resumen' | 'proyectos' | 'movimientos' | 'pagos' | 'cronograma' | 'brechas'>('resumen');
+  const [modal, setModal] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [dark, setDark] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
-  // Form states
-  const [proyectoForm, setProyectoForm] = useState<Partial<Proyecto>>({});
-  const [movimientoForm, setMovimientoForm] = useState<Partial<Movimiento>>({});
-  const [pagoForm, setPagoForm] = useState<Partial<PagoProgramado>>({});
+  // Forms
+  const [fProyecto, setFProyecto] = useState<Partial<Proyecto>>({});
+  const [fMov, setFMov] = useState<Partial<Movimiento>>({});
+  const [fPago, setFPago] = useState<Partial<Pago>>({});
 
-  const fetchState = useCallback(async () => {
-    try {
-      const res = await fetch('/api/state');
-      if (res.ok) {
-        const data = await res.json();
-        setState(data);
-      }
-    } catch (e) {
-      console.error('Error fetching state:', e);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    const s = loadState();
+    setState(s);
+    setLoaded(true);
   }, []);
 
-  useEffect(() => { fetchState(); }, [fetchState]);
-
-  const saveProyecto = async (data: Partial<Proyecto>) => {
-    setSaving(true);
-    try {
-      const method = editingId ? 'PUT' : 'POST';
-      const body = editingId ? { ...data, id: editingId } : data;
-      await fetch('/api/proyectos', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      await fetchState();
-      closeModal();
-    } finally { setSaving(false); }
+  const save = (newState: Partial<AppState>) => {
+    const updated = { ...state, ...newState };
+    setState(updated);
+    saveState(updated);
   };
 
-  const saveMovimiento = async (data: Partial<Movimiento>) => {
-    setSaving(true);
-    try {
-      const method = editingId ? 'PUT' : 'POST';
-      const body = editingId ? { ...data, id: editingId } : data;
-      await fetch('/api/movimientos', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      await fetchState();
-      closeModal();
-    } finally { setSaving(false); }
-  };
-
-  const savePago = async (data: Partial<PagoProgramado>) => {
-    setSaving(true);
-    try {
-      const method = editingId ? 'PUT' : 'POST';
-      const body = editingId ? { ...data, id: editingId } : data;
-      await fetch('/api/pagos', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      await fetchState();
-      closeModal();
-    } finally { setSaving(false); }
-  };
-
-  const deleteItem = async (type: 'proyectos' | 'movimientos' | 'pagos', id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este registro?')) return;
-    await fetch(`/api/${type}?id=${id}`, { method: 'DELETE' });
-    await fetchState();
-  };
-
-  const openModal = (type: ModalType, item?: Proyecto | Movimiento | PagoProgramado) => {
+  const openModal = (type: string, item?: Proyecto | Movimiento | Pago) => {
     setModal(type);
     if (item) {
-      setEditingId(item.id);
-      if (type === 'proyecto') setProyectoForm(item as Proyecto);
-      if (type === 'movimiento') setMovimientoForm(item as Movimiento);
-      if (type === 'pago') setPagoForm(item as PagoProgramado);
+      setEditId(item.id);
+      if (type === 'proyecto') setFProyecto(item as Proyecto);
+      if (type === 'movimiento') setFMov(item as Movimiento);
+      if (type === 'pago') setFPago(item as Pago);
     } else {
-      setEditingId(null);
-      if (type === 'proyecto') setProyectoForm({ estado: 'planificacion', servicios: [] });
-      if (type === 'movimiento') setMovimientoForm({ tipo: 'egreso', categoria: 'otros', fecha: new Date().toISOString().split('T')[0] });
-      if (type === 'pago') setPagoForm({ estado: 'pendiente', fecha_programada: new Date().toISOString().split('T')[0] });
+      setEditId(null);
+      if (type === 'proyecto') setFProyecto({ estado: 'activo' });
+      if (type === 'movimiento') setFMov({ tipo: 'egreso', fecha: new Date().toISOString().split('T')[0] });
+      if (type === 'pago') setFPago({ tipo: 'egreso', estado: 'pendiente', fecha: new Date().toISOString().split('T')[0] });
     }
   };
 
-  const closeModal = () => { setModal(null); setEditingId(null); setProyectoForm({}); setMovimientoForm({}); setPagoForm({}); };
+  const closeModal = () => { setModal(null); setEditId(null); };
 
-  const exportExcel = () => { window.open('/api/export', '_blank'); };
-
-  const importExcel = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const res = await fetch('/api/import', { method: 'POST', body: formData });
-    if (res.ok) {
-      await fetchState();
-      alert('Datos importados correctamente');
-    }
+  const saveProyecto = () => {
+    const p = { ...fProyecto, id: editId || 'proj_' + genId() } as Proyecto;
+    const list = editId ? state.proyectos.map(x => x.id === editId ? p : x) : [...state.proyectos, p];
+    save({ proyectos: list });
+    closeModal();
   };
 
-  if (loading || !state) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#0a0a0f]' : 'bg-gray-50'}`}>
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative"><div className="w-16 h-16 border-4 border-red-500/20 rounded-full"></div><div className="absolute top-0 left-0 w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div></div>
-          <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Cargando RR ALIADOS...</p>
-        </div>
-      </div>
-    );
+  const saveMovimiento = () => {
+    const m = { ...fMov, id: editId || 'mov_' + genId() } as Movimiento;
+    const list = editId ? state.movimientos.map(x => x.id === editId ? m : x) : [...state.movimientos, m];
+    save({ movimientos: list });
+    closeModal();
+  };
+
+  const savePago = () => {
+    const p = { ...fPago, id: editId || 'pago_' + genId() } as Pago;
+    const list = editId ? state.pagos.map(x => x.id === editId ? p : x) : [...state.pagos, p];
+    save({ pagos: list });
+    closeModal();
+  };
+
+  const deleteItem = (type: 'proyectos' | 'movimientos' | 'pagos', id: string) => {
+    if (!confirm('¿Eliminar este registro?')) return;
+    save({ [type]: state[type].filter((x: Proyecto | Movimiento | Pago) => x.id !== id) });
+  };
+
+  const markPagado = (id: string) => {
+    save({ pagos: state.pagos.map(p => p.id === id ? { ...p, estado: 'pagado' as EstadoPago } : p) });
+  };
+
+  // ============ CALCULATIONS ============
+  const hoy = new Date();
+  const totalIngresos = state.movimientos.filter(m => m.tipo === 'ingreso').reduce((s, m) => s + m.monto, 0);
+  const totalEgresos = state.movimientos.filter(m => m.tipo === 'egreso').reduce((s, m) => s + m.monto, 0);
+  const disponible = totalIngresos - totalEgresos;
+  const burnMensual = 500000;
+  const runway = disponible > 0 ? Math.round((disponible / burnMensual) * 10) / 10 : 0;
+
+  // Proyección 6 meses
+  const mesesProyeccion: { mes: string; ingresos: number; egresos: number; saldo: number; brecha: boolean }[] = [];
+  let saldoAcumulado = disponible;
+  for (let i = 0; i < 6; i++) {
+    const fecha = new Date(hoy.getFullYear(), hoy.getMonth() + i, 1);
+    const mesStr = fecha.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
+    const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + i + 1, 0);
+    
+    const pagosMes = state.pagos.filter(p => {
+      const f = new Date(p.fecha);
+      return f >= fecha && f <= finMes && p.estado !== 'pagado';
+    });
+    
+    const ingMes = pagosMes.filter(p => p.tipo === 'ingreso').reduce((s, p) => s + p.monto, 0);
+    const egrMes = pagosMes.filter(p => p.tipo === 'egreso').reduce((s, p) => s + p.monto, 0);
+    saldoAcumulado += ingMes - egrMes;
+    
+    mesesProyeccion.push({
+      mes: mesStr,
+      ingresos: ingMes,
+      egresos: egrMes,
+      saldo: saldoAcumulado,
+      brecha: saldoAcumulado < 0,
+    });
   }
 
-  const { proyectos, movimientos, pagos, kpis } = state;
-  const bg = darkMode ? 'bg-[#0a0a0f]' : 'bg-gray-50';
-  const cardBg = darkMode ? 'bg-[#12121a]' : 'bg-white';
-  const borderColor = darkMode ? 'border-white/[0.06]' : 'border-gray-200';
-  const textPrimary = darkMode ? 'text-white' : 'text-gray-900';
-  const textSecondary = darkMode ? 'text-gray-400' : 'text-gray-500';
-  const textMuted = darkMode ? 'text-gray-600' : 'text-gray-400';
-  const inputBg = darkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200';
-  const inputFocus = 'focus:border-red-500 focus:ring-1 focus:ring-red-500/20';
+  // Pagos próximos 30 días
+  const pagosProximos = state.pagos
+    .filter(p => p.estado !== 'pagado')
+    .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+    .slice(0, 15);
+
+  if (!loaded) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center"><div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div></div>;
+
+  const bg = dark ? 'bg-[#0a0a0f]' : 'bg-gray-50';
+  const card = dark ? 'bg-[#12121a]' : 'bg-white';
+  const border = dark ? 'border-white/[0.06]' : 'border-gray-200';
+  const txt = dark ? 'text-white' : 'text-gray-900';
+  const txt2 = dark ? 'text-gray-400' : 'text-gray-500';
+  const txt3 = dark ? 'text-gray-600' : 'text-gray-400';
+  const inp = dark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900';
+
+  const Input = ({ label, value, onChange, type = 'text', placeholder = '' }: { label: string; value: string | number; onChange: (v: string) => void; type?: string; placeholder?: string }) => (
+    <div><label className={`text-xs font-medium ${txt2} mb-1 block`}>{label}</label><input type={type} value={value || ''} onChange={e => onChange(e.target.value)} className={`w-full px-3 py-2 rounded-lg text-sm ${inp} border focus:border-red-500 focus:ring-1 focus:ring-red-500/20 outline-none`} placeholder={placeholder} /></div>
+  );
+
+  const Select = ({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) => (
+    <div><label className={`text-xs font-medium ${txt2} mb-1 block`}>{label}</label><select value={value} onChange={e => onChange(e.target.value)} className={`w-full px-3 py-2 rounded-lg text-sm ${inp} border focus:border-red-500 outline-none`}>{options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
+  );
 
   return (
     <div className={`min-h-screen ${bg}`}>
-      {/* Header */}
-      <header className={`border-b ${borderColor} ${darkMode ? 'bg-[#0a0a0f]/90' : 'bg-white/90'} backdrop-blur-xl sticky top-0 z-40`}>
+      {/* HEADER */}
+      <header className={`border-b ${border} ${dark ? 'bg-[#0a0a0f]/90' : 'bg-white/90'} backdrop-blur-xl sticky top-0 z-40`}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center shadow-lg shadow-red-500/20"><span className="text-white font-bold text-xs">RR</span></div>
-            <div><h1 className={`text-sm font-bold tracking-tight ${textPrimary}`}>RR ALIADOS</h1><p className={`text-[10px] ${textMuted}`}>Gestión Financiera</p></div>
+            <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center"><span className="text-white font-bold text-xs">RR</span></div>
+            <div><h1 className={`text-sm font-bold ${txt}`}>RR ALIADOS</h1><p className={`text-[10px] ${txt3}`}>Control Financiero CEO</p></div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={exportExcel} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${darkMode ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'bg-green-50 text-green-600 hover:bg-green-100'} transition-all`}>Exportar Excel</button>
-            <label className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer ${darkMode ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'} transition-all`}>
-              Importar Excel<input type="file" accept=".xlsx,.xls" onChange={(e) => e.target.files?.[0] && importExcel(e.target.files[0])} className="hidden" />
-            </label>
-            <button onClick={() => setDarkMode(!darkMode)} className={`p-2 rounded-lg ${darkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'} transition-all`}>{darkMode ? '☀️' : '🌙'}</button>
+            <button onClick={() => { localStorage.removeItem(STORAGE_KEY); location.reload(); }} className={`px-3 py-1.5 rounded-lg text-xs ${dark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>Resetear datos</button>
+            <button onClick={() => setDark(!dark)} className={`p-2 rounded-lg ${dark ? 'bg-white/5' : 'bg-gray-100'}`}>{dark ? '☀️' : '🌙'}</button>
           </div>
         </div>
       </header>
 
-      {/* Tabs */}
-      <div className={`border-b ${borderColor} ${darkMode ? 'bg-[#0a0a0f]' : 'bg-white'} sticky top-[57px] z-30`}>
-        <div className="max-w-7xl mx-auto px-4 flex gap-1">
-          {([['dashboard', 'Dashboard'], ['proyectos', 'Proyectos'], ['movimientos', 'Movimientos'], ['pagos', 'Pagos'], ['calendario', 'Calendario']] as [Tab, string][]).map(([key, label]) => (
-            <button key={key} onClick={() => setTab(key)} className={`px-4 py-3 text-xs font-medium border-b-2 transition-all ${tab === key ? 'border-red-500 text-red-400' : `border-transparent ${textSecondary} hover:${textPrimary}`}`}>{label}</button>
+      {/* TABS */}
+      <div className={`border-b ${border} sticky top-[53px] z-30 ${dark ? 'bg-[#0a0a0f]' : 'bg-white'}`}>
+        <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
+          {([['resumen', 'Resumen'], ['proyectos', 'Proyectos'], ['movimientos', 'Movimientos'], ['pagos', 'Pagos'], ['cronograma', 'Cronograma'], ['brechas', 'Brechas 6M']] as [string, string][]).map(([k, l]) => (
+            <button key={k} onClick={() => setTab(k as typeof tab)} className={`px-4 py-3 text-xs font-medium border-b-2 whitespace-nowrap ${tab === k ? 'border-red-500 text-red-400' : `border-transparent ${txt2}`}`}>{l}</button>
           ))}
         </div>
       </div>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* DASHBOARD TAB */}
-        {tab === 'dashboard' && (
+        {/* ============ RESUMEN ============ */}
+        {tab === 'resumen' && (
           <>
-            {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {[
-                { label: 'Disponible', value: formatCOP(kpis.disponible_hoy), sub: 'Bancolombia', color: 'from-red-500/10' },
-                { label: 'Ingresos Mes', value: formatCOP(kpis.total_ingresos_mes), sub: `${proyectos.filter(p=>p.estado==='activo').length} proyectos`, color: 'from-green-500/10' },
-                { label: 'Egresos Mes', value: formatCOP(kpis.total_egresos_mes), sub: `${kpis.pagos_pendientes} pagos pendientes`, color: 'from-red-500/10' },
-                { label: 'Runway', value: `${kpis.runway_meses} meses`, sub: kpis.pagos_vencidos > 0 ? `${kpis.pagos_vencidos} vencidos` : 'Al día', color: kpis.runway_meses >= 8 ? 'from-green-500/10' : 'from-yellow-500/10' },
-              ].map((kpi, i) => (
-                <div key={i} className={`${cardBg} border ${borderColor} rounded-2xl p-5 relative overflow-hidden hover:border-red-500/20 transition-all`}>
-                  <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${kpi.color} to-transparent rounded-bl-[30px]`}></div>
-                  <p className={`text-[10px] font-semibold uppercase tracking-widest ${textMuted} mb-2`}>{kpi.label}</p>
-                  <p className={`text-xl font-bold ${textPrimary}`}>{kpi.value}</p>
-                  <p className={`text-[10px] ${textMuted} mt-1`}>{kpi.sub}</p>
-                </div>
-              ))}
+              <div className={`${card} border ${border} rounded-2xl p-5`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Disponible</p><p className={`text-2xl font-bold ${txt}`}>{fmt(disponible)}</p><p className={`text-xs ${txt3}`}>Bancolombia</p></div>
+              <div className={`${card} border ${border} rounded-2xl p-5`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Runway</p><p className={`text-2xl font-bold ${runway >= 8 ? 'text-green-400' : runway >= 4 ? 'text-yellow-400' : 'text-red-400'}`}>{runway} meses</p><p className={`text-xs ${txt3}`}>Burn {fmt(burnMensual)}/mes</p></div>
+              <div className={`${card} border ${border} rounded-2xl p-5`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Proyectos Activos</p><p className={`text-2xl font-bold ${txt}`}>{state.proyectos.filter(p => p.estado === 'activo').length}</p><p className={`text-xs ${txt3}`}>{state.proyectos.filter(p => p.estado === 'activo').map(p => p.nombre).join(', ')}</p></div>
+              <div className={`${card} border ${border} rounded-2xl p-5`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Pagos Pendientes</p><p className={`text-2xl font-bold ${txt}`}>{state.pagos.filter(p => p.estado !== 'pagado').length}</p><p className={`text-xs ${txt3}`}>{fmt(state.pagos.filter(p => p.estado !== 'pagado' && p.tipo === 'egreso').reduce((s, p) => s + p.monto, 0))} por pagar</p></div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-              <button onClick={() => openModal('proyecto')} className={`${cardBg} border ${borderColor} rounded-xl p-4 text-left hover:border-green-500/30 transition-all group`}>
-                <div className="text-green-400 mb-2">+</div>
-                <p className={`text-xs font-medium ${textPrimary}`}>Nuevo Proyecto</p>
-              </button>
-              <button onClick={() => openModal('movimiento')} className={`${cardBg} border ${borderColor} rounded-xl p-4 text-left hover:border-blue-500/30 transition-all group`}>
-                <div className="text-blue-400 mb-2">+</div>
-                <p className={`text-xs font-medium ${textPrimary}`}>Registrar Movimiento</p>
-              </button>
-              <button onClick={() => openModal('pago')} className={`${cardBg} border ${borderColor} rounded-xl p-4 text-left hover:border-yellow-500/30 transition-all group`}>
-                <div className="text-yellow-400 mb-2">+</div>
-                <p className={`text-xs font-medium ${textPrimary}`}>Programar Pago</p>
-              </button>
-              <button onClick={exportExcel} className={`${cardBg} border ${borderColor} rounded-xl p-4 text-left hover:border-purple-500/30 transition-all group`}>
-                <div className="text-purple-400 mb-2">↓</div>
-                <p className={`text-xs font-medium ${textPrimary}`}>Exportar Excel</p>
-              </button>
-            </div>
-
-            {/* Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className={`${cardBg} border ${borderColor} rounded-2xl overflow-hidden`}>
-                <div className={`p-4 border-b ${borderColor}`}><h3 className={`text-sm font-semibold ${textPrimary}`}>Últimos Movimientos</h3></div>
-                <div className="divide-y divide-white/[0.04]">
-                  {movimientos.slice(-8).reverse().map(m => (
-                    <div key={m.id} className="px-4 py-3 flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${m.tipo === 'ingreso' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>{m.tipo === 'ingreso' ? '↑' : '↓'}</div>
-                      <div className="flex-1 min-w-0"><p className={`text-xs font-medium ${textPrimary} truncate`}>{m.concepto}</p><p className={`text-[10px] ${textMuted}`}>{formatDate(m.fecha)}</p></div>
-                      <span className={`text-xs font-semibold ${m.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{m.tipo === 'ingreso' ? '+' : '-'}{formatCOP(m.monto)}</span>
-                    </div>
-                  ))}
-                  {movimientos.length === 0 && <div className="px-4 py-8 text-center"><p className={`text-xs ${textMuted}`}>Sin movimientos registrados</p></div>}
+              <div className={`${card} border ${border} rounded-2xl overflow-hidden`}>
+                <div className={`p-4 border-b ${border}`}><h3 className={`text-sm font-semibold ${txt}`}>Próximos Pagos</h3></div>
+                <div className="max-h-80 overflow-y-auto divide-y divide-white/[0.04]">
+                  {pagosProximos.map(p => {
+                    const dias = Math.ceil((new Date(p.fecha).getTime() - Date.now()) / 86400000);
+                    return (
+                      <div key={p.id} className="px-4 py-3 flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center ${dias < 0 ? 'bg-red-500/10' : dias <= 7 ? 'bg-yellow-500/10' : 'bg-blue-500/10'}`}>
+                          <span className={`text-sm font-bold ${dias < 0 ? 'text-red-400' : dias <= 7 ? 'text-yellow-400' : 'text-blue-400'}`}>{new Date(p.fecha).getDate()}</span>
+                          <span className={`text-[8px] ${txt3}`}>{new Date(p.fecha).toLocaleDateString('es-CO', { month: 'short' })}</span>
+                        </div>
+                        <div className="flex-1 min-w-0"><p className={`text-xs font-medium ${txt} truncate`}>{p.concepto}</p><p className={`text-[10px] ${dias < 0 ? 'text-red-400' : txt3}`}>{dias < 0 ? `Vencido ${-dias}d` : `En ${dias}d`}</p></div>
+                        <span className={`text-xs font-bold ${p.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{p.tipo === 'ingreso' ? '+' : '-'}{fmt(p.monto)}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className={`${cardBg} border ${borderColor} rounded-2xl overflow-hidden`}>
-                <div className={`p-4 border-b ${borderColor}`}><h3 className={`text-sm font-semibold ${textPrimary}`}>Pagos Próximos</h3></div>
-                <div className="divide-y divide-white/[0.04]">
-                  {pagos.filter(p => p.estado !== 'pagado').slice(0, 8).map(p => (
-                    <div key={p.id} className="px-4 py-3 flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs border ${ESTADO_COLORS[p.estado]}`}>{p.estado === 'vencido' ? '!' : '⏰'}</div>
-                      <div className="flex-1 min-w-0"><p className={`text-xs font-medium ${textPrimary} truncate`}>{p.concepto}</p><p className={`text-[10px] ${textMuted}`}>{formatDate(p.fecha_programada)}</p></div>
-                      <span className={`text-xs font-semibold ${textPrimary}`}>{formatCOP(p.monto)}</span>
+              <div className={`${card} border ${border} rounded-2xl overflow-hidden`}>
+                <div className={`p-4 border-b ${border}`}><h3 className={`text-sm font-semibold ${txt}`}>Últimos Movimientos</h3></div>
+                <div className="max-h-80 overflow-y-auto divide-y divide-white/[0.04]">
+                  {state.movimientos.slice(-10).reverse().map(m => (
+                    <div key={m.id} className="px-4 py-3 flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${m.tipo === 'ingreso' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>{m.tipo === 'ingreso' ? '↑' : '↓'}</div>
+                      <div className="flex-1 min-w-0"><p className={`text-xs font-medium ${txt} truncate`}>{m.concepto}</p><p className={`text-[10px] ${txt3}`}>{fmtDate(m.fecha)}</p></div>
+                      <span className={`text-xs font-bold ${m.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{m.tipo === 'ingreso' ? '+' : '-'}{fmt(m.monto)}</span>
                     </div>
                   ))}
-                  {pagos.filter(p => p.estado !== 'pagado').length === 0 && <div className="px-4 py-8 text-center"><p className={`text-xs ${textMuted}`}>Sin pagos pendientes</p></div>}
                 </div>
               </div>
             </div>
           </>
         )}
 
-        {/* PROYECTOS TAB */}
+        {/* ============ PROYECTOS ============ */}
         {tab === 'proyectos' && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-lg font-bold ${textPrimary}`}>Proyectos</h2>
-              <button onClick={() => openModal('proyecto')} className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white hover:bg-red-600 transition-all">+ Nuevo Proyecto</button>
-            </div>
+          <>
+            <div className="flex justify-between mb-4"><h2 className={`text-lg font-bold ${txt}`}>Proyectos</h2><button onClick={() => openModal('proyecto')} className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white">+ Nuevo</button></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {proyectos.map(p => (
-                <div key={p.id} className={`${cardBg} border ${borderColor} rounded-2xl p-5 hover:border-red-500/20 transition-all`}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div><h3 className={`text-sm font-semibold ${textPrimary}`}>{p.nombre}</h3><p className={`text-xs ${textMuted}`}>{p.cliente}</p></div>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${ESTADO_COLORS[p.estado]}`}>{p.estado}</span>
+              {state.proyectos.map(p => (
+                <div key={p.id} className={`${card} border ${border} rounded-2xl p-5`}>
+                  <div className="flex justify-between mb-3"><div><h3 className={`text-sm font-semibold ${txt}`}>{p.nombre}</h3><p className={`text-xs ${txt3}`}>{p.cliente}</p></div><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${p.estado === 'activo' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'}`}>{p.estado}</span></div>
+                  <p className={`text-xs ${txt2} mb-3`}>{p.descripcion}</p>
+                  <div className="space-y-1 mb-3">
+                    <div className="flex justify-between text-xs"><span className={txt3}>Valor</span><span className={txt}>{fmt(p.valor_total)}</span></div>
+                    <div className="flex justify-between text-xs"><span className={txt3}>Pagado</span><span className="text-green-400">{fmt(p.valor_pagado)}</span></div>
+                    <div className="flex justify-between text-xs"><span className={txt3}>Pendiente</span><span className="text-yellow-400">{fmt(p.valor_total - p.valor_pagado)}</span></div>
                   </div>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between"><span className={`text-xs ${textMuted}`}>Valor Total</span><span className={`text-xs font-medium ${textPrimary}`}>{formatCOP(p.valor_total)}</span></div>
-                    <div className="flex justify-between"><span className={`text-xs ${textMuted}`}>Pagado</span><span className={`text-xs font-medium text-green-400`}>{formatCOP(p.valor_pagado)}</span></div>
-                    <div className="flex justify-between"><span className={`text-xs ${textMuted}`}>Pendiente</span><span className={`text-xs font-medium text-yellow-400`}>{formatCOP(p.valor_total - p.valor_pagado)}</span></div>
-                    <div className="w-full bg-white/5 rounded-full h-1.5 mt-2"><div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${p.valor_total > 0 ? (p.valor_pagado / p.valor_total) * 100 : 0}%` }}></div></div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => openModal('proyecto', p)} className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium ${darkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'} ${textSecondary} transition-all`}>Editar</button>
-                    <button onClick={() => deleteItem('proyectos', p.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all`}>Eliminar</button>
-                  </div>
+                  <div className="w-full bg-white/5 rounded-full h-1.5 mb-3"><div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${p.valor_total > 0 ? (p.valor_pagado / p.valor_total) * 100 : 0}%` }}></div></div>
+                  <div className="flex gap-2"><button onClick={() => openModal('proyecto', p)} className={`flex-1 px-3 py-1.5 rounded-lg text-xs ${dark ? 'bg-white/5' : 'bg-gray-100'} ${txt2}`}>Editar</button><button onClick={() => deleteItem('proyectos', p.id)} className="px-3 py-1.5 rounded-lg text-xs bg-red-500/10 text-red-400">Eliminar</button></div>
                 </div>
               ))}
-              {proyectos.length === 0 && <div className={`col-span-full ${cardBg} border ${borderColor} rounded-2xl p-12 text-center`}><p className={`text-sm ${textMuted}`}>No hay proyectos registrados</p><button onClick={() => openModal('proyecto')} className="mt-4 px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white">Crear primer proyecto</button></div>}
             </div>
-          </div>
+          </>
         )}
 
-        {/* MOVIMIENTOS TAB */}
+        {/* ============ MOVIMIENTOS ============ */}
         {tab === 'movimientos' && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-lg font-bold ${textPrimary}`}>Movimientos</h2>
-              <button onClick={() => openModal('movimiento')} className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white hover:bg-red-600 transition-all">+ Nuevo Movimiento</button>
-            </div>
-            <div className={`${cardBg} border ${borderColor} rounded-2xl overflow-hidden`}>
+          <>
+            <div className="flex justify-between mb-4"><h2 className={`text-lg font-bold ${txt}`}>Movimientos</h2><button onClick={() => openModal('movimiento')} className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white">+ Nuevo</button></div>
+            <div className={`${card} border ${border} rounded-2xl overflow-hidden`}>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead><tr className={`border-b ${borderColor}`}>
-                    <th className={`text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>Fecha</th>
-                    <th className={`text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>Tipo</th>
-                    <th className={`text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>Concepto</th>
-                    <th className={`text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>Categoría</th>
-                    <th className={`text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>Monto</th>
-                    <th className={`text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>Acciones</th>
+                  <thead><tr className={`border-b ${border}`}>
+                    <th className={`text-left px-4 py-3 text-[10px] uppercase ${txt3}`}>Fecha</th>
+                    <th className={`text-left px-4 py-3 text-[10px] uppercase ${txt3}`}>Tipo</th>
+                    <th className={`text-left px-4 py-3 text-[10px] uppercase ${txt3}`}>Concepto</th>
+                    <th className={`text-left px-4 py-3 text-[10px] uppercase ${txt3}`}>Categoría</th>
+                    <th className={`text-right px-4 py-3 text-[10px] uppercase ${txt3}`}>Monto</th>
+                    <th className={`text-right px-4 py-3 text-[10px] uppercase ${txt3}`}>Acciones</th>
                   </tr></thead>
                   <tbody className="divide-y divide-white/[0.04]">
-                    {movimientos.slice().reverse().map(m => (
-                      <tr key={m.id} className={`hover:${darkMode ? 'bg-white/[0.02]' : 'bg-gray-50'} transition-colors`}>
-                        <td className={`px-4 py-3 text-xs ${textSecondary}`}>{formatDate(m.fecha)}</td>
+                    {state.movimientos.slice().reverse().map(m => (
+                      <tr key={m.id}>
+                        <td className={`px-4 py-3 text-xs ${txt2}`}>{fmtDate(m.fecha)}</td>
                         <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${m.tipo === 'ingreso' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>{m.tipo}</span></td>
-                        <td className={`px-4 py-3 text-xs font-medium ${textPrimary}`}>{m.concepto}</td>
-                        <td className={`px-4 py-3 text-xs ${textSecondary}`}>{m.categoria}</td>
-                        <td className={`px-4 py-3 text-xs font-semibold text-right ${m.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{m.tipo === 'ingreso' ? '+' : '-'}{formatCOP(m.monto)}</td>
-                        <td className="px-4 py-3 text-right"><button onClick={() => openModal('movimiento', m)} className={`text-xs ${textMuted} hover:${textPrimary}`}>Editar</button></td>
+                        <td className={`px-4 py-3 text-xs font-medium ${txt}`}>{m.concepto}</td>
+                        <td className={`px-4 py-3 text-xs ${txt2}`}>{m.categoria}</td>
+                        <td className={`px-4 py-3 text-xs font-bold text-right ${m.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{m.tipo === 'ingreso' ? '+' : '-'}{fmt(m.monto)}</td>
+                        <td className="px-4 py-3 text-right"><button onClick={() => openModal('movimiento', m)} className={`text-xs ${txt3} hover:${txt}`}>Editar</button></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              {movimientos.length === 0 && <div className="px-4 py-12 text-center"><p className={`text-sm ${textMuted}`}>Sin movimientos registrados</p></div>}
             </div>
-          </div>
+          </>
         )}
 
-        {/* PAGOS TAB */}
+        {/* ============ PAGOS ============ */}
         {tab === 'pagos' && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-lg font-bold ${textPrimary}`}>Pagos Programados</h2>
-              <button onClick={() => openModal('pago')} className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white hover:bg-red-600 transition-all">+ Programar Pago</button>
-            </div>
+          <>
+            <div className="flex justify-between mb-4"><h2 className={`text-lg font-bold ${txt}`}>Pagos</h2><button onClick={() => openModal('pago')} className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white">+ Nuevo</button></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pagos.map(p => {
-                const proyecto = proyectos.find(pr => pr.id === p.proyecto_id);
-                const isVencido = p.estado !== 'pagado' && new Date(p.fecha_programada) < new Date();
+              {state.pagos.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()).map(p => {
+                const vencido = p.estado !== 'pagado' && new Date(p.fecha) < hoy;
                 return (
-                  <div key={p.id} className={`${cardBg} border ${isVencido ? 'border-red-500/30' : borderColor} rounded-2xl p-5 transition-all`}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div><h3 className={`text-sm font-semibold ${textPrimary}`}>{p.concepto}</h3><p className={`text-xs ${textMuted}`}>{proyecto?.nombre || 'Sin proyecto'}</p></div>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${ESTADO_COLORS[isVencido ? 'vencido' : p.estado]}`}>{isVencido ? 'vencido' : p.estado}</span>
-                    </div>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between"><span className={`text-xs ${textMuted}`}>Monto</span><span className={`text-sm font-bold ${textPrimary}`}>{formatCOP(p.monto)}</span></div>
-                      <div className="flex justify-between"><span className={`text-xs ${textMuted}`}>Fecha</span><span className={`text-xs ${textPrimary}`}>{formatDate(p.fecha_programada)}</span></div>
-                      <div className="flex justify-between"><span className={`text-xs ${textMuted}`}>Responsable</span><span className={`text-xs ${textPrimary}`}>{p.responsable || '--'}</span></div>
-                    </div>
+                  <div key={p.id} className={`${card} border ${vencido ? 'border-red-500/30' : border} rounded-2xl p-5`}>
+                    <div className="flex justify-between mb-2"><h3 className={`text-sm font-medium ${txt}`}>{p.concepto}</h3><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${p.estado === 'pagado' ? 'bg-green-500/10 text-green-400' : vencido ? 'bg-red-500/10 text-red-400' : 'bg-yellow-500/10 text-yellow-400'}`}>{vencido ? 'vencido' : p.estado}</span></div>
+                    <p className={`text-xl font-bold ${p.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'} mb-2`}>{p.tipo === 'ingreso' ? '+' : '-'}{fmt(p.monto)}</p>
+                    <p className={`text-xs ${txt3} mb-3`}>{fmtDate(p.fecha)}</p>
                     <div className="flex gap-2">
-                      {p.estado !== 'pagado' && <button onClick={() => savePago({ id: p.id, estado: 'pagado', fecha_pagada: new Date().toISOString().split('T')[0] })} className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-all">Marcar Pagado</button>}
-                      <button onClick={() => openModal('pago', p)} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${darkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100'} ${textSecondary} transition-all`}>Editar</button>
+                      {p.estado !== 'pagado' && <button onClick={() => markPagado(p.id)} className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/10 text-green-400">Marcar Pagado</button>}
+                      <button onClick={() => openModal('pago', p)} className={`px-3 py-1.5 rounded-lg text-xs ${dark ? 'bg-white/5' : 'bg-gray-100'} ${txt2}`}>Editar</button>
                     </div>
                   </div>
                 );
               })}
-              {pagos.length === 0 && <div className={`col-span-full ${cardBg} border ${borderColor} rounded-2xl p-12 text-center`}><p className={`text-sm ${textMuted}`}>No hay pagos programados</p></div>}
             </div>
-          </div>
+          </>
         )}
 
-        {/* CALENDARIO TAB */}
-        {tab === 'calendario' && (
-          <div>
-            <h2 className={`text-lg font-bold ${textPrimary} mb-4`}>Calendario de Pagos</h2>
-            <div className="space-y-2">
-              {pagos.filter(p => p.estado !== 'pagado').sort((a, b) => new Date(a.fecha_programada).getTime() - new Date(b.fecha_programada).getTime()).map(p => {
-                const proyecto = proyectos.find(pr => pr.id === p.proyecto_id);
-                const isVencido = new Date(p.fecha_programada) < new Date();
-                const daysUntil = Math.ceil((new Date(p.fecha_programada).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        {/* ============ CRONOGRAMA ============ */}
+        {tab === 'cronograma' && (
+          <>
+            <h2 className={`text-lg font-bold ${txt} mb-4`}>Cronograma de Pagos (Ago-Dic 2026)</h2>
+            <div className="space-y-6">
+              {[8, 9, 10, 11, 12].map(mes => {
+                const pagosMes = state.pagos.filter(p => {
+                  const f = new Date(p.fecha);
+                  return f.getMonth() + 1 === mes && f.getFullYear() === 2026 && p.estado !== 'pagado';
+                }).sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+                const totalIng = pagosMes.filter(p => p.tipo === 'ingreso').reduce((s, p) => s + p.monto, 0);
+                const totalEgr = pagosMes.filter(p => p.tipo === 'egreso').reduce((s, p) => s + p.monto, 0);
+                const nMes = new Date(2026, mes - 1).toLocaleDateString('es-CO', { month: 'long' });
                 return (
-                  <div key={p.id} className={`${cardBg} border ${isVencido ? 'border-red-500/30' : borderColor} rounded-xl p-4 flex items-center gap-4 transition-all`}>
-                    <div className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center ${isVencido ? 'bg-red-500/10' : daysUntil <= 7 ? 'bg-yellow-500/10' : 'bg-blue-500/10'}`}>
-                      <span className={`text-lg font-bold ${isVencido ? 'text-red-400' : daysUntil <= 7 ? 'text-yellow-400' : 'text-blue-400'}`}>{new Date(p.fecha_programada).getDate()}</span>
-                      <span className={`text-[9px] ${textMuted}`}>{new Date(p.fecha_programada).toLocaleDateString('es-CO', { month: 'short' })}</span>
+                  <div key={mes} className={`${card} border ${border} rounded-2xl overflow-hidden`}>
+                    <div className={`p-4 border-b ${border} flex justify-between items-center`}>
+                      <h3 className={`text-sm font-semibold capitalize ${txt}`}>{nMes} 2026</h3>
+                      <div className="flex gap-4 text-xs"><span className="text-green-400">+{fmt(totalIng)}</span><span className="text-red-400">-{fmt(totalEgr)}</span><span className={`font-bold ${totalIng - totalEgr >= 0 ? 'text-green-400' : 'text-red-400'}`}>Neto: {fmt(totalIng - totalEgr)}</span></div>
                     </div>
-                    <div className="flex-1"><p className={`text-sm font-medium ${textPrimary}`}>{p.concepto}</p><p className={`text-xs ${textMuted}`}>{proyecto?.nombre} · {p.responsable}</p></div>
-                    <div className="text-right"><p className={`text-sm font-bold ${textPrimary}`}>{formatCOP(p.monto)}</p><p className={`text-[10px] ${isVencido ? 'text-red-400' : daysUntil <= 7 ? 'text-yellow-400' : textMuted}`}>{isVencido ? `Vencido hace ${-daysUntil}d` : `En ${daysUntil}d`}</p></div>
+                    <div className="divide-y divide-white/[0.04]">
+                      {pagosMes.map(p => (
+                        <div key={p.id} className="px-4 py-3 flex items-center gap-3">
+                          <div className={`w-10 text-center`}><span className={`text-lg font-bold ${txt}`}>{new Date(p.fecha).getDate()}</span><br /><span className={`text-[9px] ${txt3}`}>{new Date(p.fecha).toLocaleDateString('es-CO', { weekday: 'short' })}</span></div>
+                          <div className="flex-1"><p className={`text-xs font-medium ${txt}`}>{p.concepto}</p></div>
+                          <span className={`text-xs font-bold ${p.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{p.tipo === 'ingreso' ? '+' : '-'}{fmt(p.monto)}</span>
+                        </div>
+                      ))}
+                      {pagosMes.length === 0 && <div className="px-4 py-6 text-center"><p className={`text-xs ${txt3}`}>Sin pagos programados</p></div>}
+                    </div>
                   </div>
                 );
               })}
-              {pagos.filter(p => p.estado !== 'pagado').length === 0 && <div className={`${cardBg} border ${borderColor} rounded-2xl p-12 text-center`}><p className={`text-sm ${textMuted}`}>No hay pagos pendientes</p></div>}
             </div>
-          </div>
+          </>
+        )}
+
+        {/* ============ BRECHAS ============ */}
+        {tab === 'brechas' && (
+          <>
+            <h2 className={`text-lg font-bold ${txt} mb-2`}>Proyección 6 Meses</h2>
+            <p className={`text-xs ${txt3} mb-6`}>Análisis de brechas de dinero basado en pagos programados</p>
+            
+            <div className={`${card} border ${border} rounded-2xl p-5 mb-6`}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className={`text-4xl font-bold ${runway >= 8 ? 'text-green-400' : runway >= 4 ? 'text-yellow-400' : 'text-red-400'}`}>{runway}</div>
+                <div><p className={`text-sm font-semibold ${txt}`}>Meses de Runway</p><p className={`text-xs ${txt3}`}>Disponible: {fmt(disponible)} · Burn: {fmt(burnMensual)}/mes</p></div>
+              </div>
+              <div className={`w-full h-4 rounded-full ${dark ? 'bg-white/5' : 'bg-gray-100'}`}>
+                <div className={`h-4 rounded-full ${runway >= 8 ? 'bg-green-500' : runway >= 4 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${Math.min(runway / 12 * 100, 100)}%` }}></div>
+              </div>
+              <div className="flex justify-between mt-2 text-[10px]"><span className={txt3}>0</span><span className={txt3}>3</span><span className={txt3}>6</span><span className={txt3}>9</span><span className={txt3}>12</span></div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mesesProyeccion.map((m, i) => (
+                <div key={i} className={`${card} border ${m.brecha ? 'border-red-500/30' : border} rounded-2xl p-5`}>
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className={`text-sm font-semibold capitalize ${txt}`}>{m.mes}</h3>
+                    {m.brecha && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400">BRECHA</span>}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs"><span className={txt3}>Ingresos</span><span className="text-green-400">+{fmt(m.ingresos)}</span></div>
+                    <div className="flex justify-between text-xs"><span className={txt3}>Egresos</span><span className="text-red-400">-{fmt(m.egresos)}</span></div>
+                    <div className={`flex justify-between text-xs pt-2 border-t ${border}`}><span className="font-semibold">Neto</span><span className={`font-bold ${m.ingresos - m.egresos >= 0 ? 'text-green-400' : 'text-red-400'}`}>{fmt(m.ingresos - m.egresos)}</span></div>
+                    <div className={`flex justify-between text-sm pt-2 border-t ${border}`}><span className="font-bold">Saldo Acumulado</span><span className={`font-bold ${m.saldo >= 0 ? 'text-green-400' : 'text-red-400'}`}>{fmt(m.saldo)}</span></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </main>
 
-      {/* MODALS */}
+      {/* ============ MODALS ============ */}
       {modal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className={`${cardBg} border ${borderColor} rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto`}>
-            <div className={`p-5 border-b ${borderColor} flex items-center justify-between`}>
-              <h3 className={`text-sm font-bold ${textPrimary}`}>{editingId ? 'Editar' : 'Nuevo'} {modal === 'proyecto' ? 'Proyecto' : modal === 'movimiento' ? 'Movimiento' : 'Pago'}</h3>
-              <button onClick={closeModal} className={`p-1 rounded-lg ${darkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}>✕</button>
-            </div>
+          <div className={`${card} border ${border} rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto`}>
+            <div className={`p-5 border-b ${border} flex justify-between`}><h3 className={`text-sm font-bold ${txt}`}>{editId ? 'Editar' : 'Nuevo'} {modal === 'proyecto' ? 'Proyecto' : modal === 'movimiento' ? 'Movimiento' : 'Pago'}</h3><button onClick={closeModal} className={txt2}>✕</button></div>
             <div className="p-5 space-y-4">
               {modal === 'proyecto' && <>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Nombre</label><input value={proyectoForm.nombre || ''} onChange={e => setProyectoForm({...proyectoForm, nombre: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} placeholder="Nombre del proyecto" /></div>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Cliente</label><input value={proyectoForm.cliente || ''} onChange={e => setProyectoForm({...proyectoForm, cliente: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} placeholder="Nombre del cliente" /></div>
+                <Input label="Nombre" value={fProyecto.nombre || ''} onChange={v => setFProyecto({...fProyecto, nombre: v})} />
+                <Input label="Cliente" value={fProyecto.cliente || ''} onChange={v => setFProyecto({...fProyecto, cliente: v})} />
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Estado</label><select value={proyectoForm.estado || 'planificacion'} onChange={e => setProyectoForm({...proyectoForm, estado: e.target.value as EstadoProyecto})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`}><option value="planificacion">Planificación</option><option value="activo">Activo</option><option value="pausado">Pausado</option><option value="completado">Completado</option><option value="cancelado">Cancelado</option></select></div>
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Valor Total</label><input type="number" value={proyectoForm.valor_total || ''} onChange={e => setProyectoForm({...proyectoForm, valor_total: Number(e.target.value)})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} placeholder="0" /></div>
+                  <Select label="Estado" value={fProyecto.estado || 'activo'} onChange={v => setFProyecto({...fProyecto, estado: v as EstadoProyecto})} options={[{value:'planificacion',label:'Planificación'},{value:'activo',label:'Activo'},{value:'pausado',label:'Pausado'},{value:'completado',label:'Completado'},{value:'cancelado',label:'Cancelado'}]} />
+                  <Input label="Valor Total" value={fProyecto.valor_total || ''} onChange={v => setFProyecto({...fProyecto, valor_total: Number(v)})} type="number" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Fecha Inicio</label><input type="date" value={proyectoForm.fecha_inicio || ''} onChange={e => setProyectoForm({...proyectoForm, fecha_inicio: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} /></div>
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Fecha Fin Estimada</label><input type="date" value={proyectoForm.fecha_fin_estimada || ''} onChange={e => setProyectoForm({...proyectoForm, fecha_fin_estimada: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} /></div>
+                  <Input label="Fecha Inicio" value={fProyecto.fecha_inicio || ''} onChange={v => setFProyecto({...fProyecto, fecha_inicio: v})} type="date" />
+                  <Input label="Fecha Fin" value={fProyecto.fecha_fin || ''} onChange={v => setFProyecto({...fProyecto, fecha_fin: v})} type="date" />
                 </div>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Descripción</label><textarea value={proyectoForm.descripcion || ''} onChange={e => setProyectoForm({...proyectoForm, descripcion: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} rows={3} /></div>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Notas</label><textarea value={proyectoForm.notas || ''} onChange={e => setProyectoForm({...proyectoForm, notas: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} rows={2} /></div>
+                <Input label="Descripción" value={fProyecto.descripcion || ''} onChange={v => setFProyecto({...fProyecto, descripcion: v})} />
               </>}
-
               {modal === 'movimiento' && <>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Tipo</label><select value={movimientoForm.tipo || 'egreso'} onChange={e => setMovimientoForm({...movimientoForm, tipo: e.target.value as TipoMovimiento})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`}><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select></div>
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Monto</label><input type="number" value={movimientoForm.monto || ''} onChange={e => setMovimientoForm({...movimientoForm, monto: Number(e.target.value)})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} placeholder="0" /></div>
+                  <Select label="Tipo" value={fMov.tipo || 'egreso'} onChange={v => setFMov({...fMov, tipo: v as TipoMovimiento})} options={[{value:'ingreso',label:'Ingreso'},{value:'egreso',label:'Egreso'}]} />
+                  <Input label="Monto" value={fMov.monto || ''} onChange={v => setFMov({...fMov, monto: Number(v)})} type="number" />
                 </div>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Concepto</label><input value={movimientoForm.concepto || ''} onChange={e => setMovimientoForm({...movimientoForm, concepto: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} placeholder="Descripción del movimiento" /></div>
+                <Input label="Concepto" value={fMov.concepto || ''} onChange={v => setFMov({...fMov, concepto: v})} />
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Fecha</label><input type="date" value={movimientoForm.fecha || ''} onChange={e => setMovimientoForm({...movimientoForm, fecha: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} /></div>
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Categoría</label><select value={movimientoForm.categoria || 'otros'} onChange={e => setMovimientoForm({...movimientoForm, categoria: e.target.value as CategoriaMovimiento})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`}>{CATEGORIAS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
+                  <Input label="Fecha" value={fMov.fecha || ''} onChange={v => setFMov({...fMov, fecha: v})} type="date" />
+                  <Input label="Categoría" value={fMov.categoria || ''} onChange={v => setFMov({...fMov, categoria: v})} />
                 </div>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Proyecto (opcional)</label><select value={movimientoForm.proyecto_id || ''} onChange={e => setMovimientoForm({...movimientoForm, proyecto_id: e.target.value || null})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`}><option value="">Sin proyecto</option>{proyectos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select></div>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Notas</label><textarea value={movimientoForm.notas || ''} onChange={e => setMovimientoForm({...movimientoForm, notas: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} rows={2} /></div>
+                <Select label="Proyecto" value={fMov.proyecto_id || ''} onChange={v => setFMov({...fMov, proyecto_id: v})} options={[{value:'',label:'Sin proyecto'},...state.proyectos.map(p => ({value:p.id,label:p.nombre}))]} />
               </>}
-
               {modal === 'pago' && <>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Concepto</label><input value={pagoForm.concepto || ''} onChange={e => setPagoForm({...pagoForm, concepto: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} placeholder="Descripción del pago" /></div>
+                <Input label="Concepto" value={fPago.concepto || ''} onChange={v => setFPago({...fPago, concepto: v})} />
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Monto</label><input type="number" value={pagoForm.monto || ''} onChange={e => setPagoForm({...pagoForm, monto: Number(e.target.value)})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} placeholder="0" /></div>
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Fecha Programada</label><input type="date" value={pagoForm.fecha_programada || ''} onChange={e => setPagoForm({...pagoForm, fecha_programada: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} /></div>
+                  <Select label="Tipo" value={fPago.tipo || 'egreso'} onChange={v => setFPago({...fPago, tipo: v as 'ingreso' | 'egreso'})} options={[{value:'ingreso',label:'Ingreso'},{value:'egreso',label:'Egreso'}]} />
+                  <Input label="Monto" value={fPago.monto || ''} onChange={v => setFPago({...fPago, monto: Number(v)})} type="number" />
                 </div>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Proyecto</label><select value={pagoForm.proyecto_id || ''} onChange={e => setPagoForm({...pagoForm, proyecto_id: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`}><option value="">Seleccionar proyecto</option>{proyectos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Estado</label><select value={pagoForm.estado || 'pendiente'} onChange={e => setPagoForm({...pagoForm, estado: e.target.value as EstadoPago})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`}><option value="pendiente">Pendiente</option><option value="programado">Programado</option><option value="pagado">Pagado</option></select></div>
-                  <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Responsable</label><input value={pagoForm.responsable || ''} onChange={e => setPagoForm({...pagoForm, responsable: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} placeholder="Nombre" /></div>
+                  <Input label="Fecha" value={fPago.fecha || ''} onChange={v => setFPago({...fPago, fecha: v})} type="date" />
+                  <Select label="Estado" value={fPago.estado || 'pendiente'} onChange={v => setFPago({...fPago, estado: v as EstadoPago})} options={[{value:'pendiente',label:'Pendiente'},{value:'programado',label:'Programado'},{value:'pagado',label:'Pagado'}]} />
                 </div>
-                <div><label className={`text-xs font-medium ${textSecondary} mb-1 block`}>Notas</label><textarea value={pagoForm.notas || ''} onChange={e => setPagoForm({...pagoForm, notas: e.target.value})} className={`w-full px-3 py-2 rounded-lg text-sm ${inputBg} border ${textPrimary} ${inputFocus} outline-none`} rows={2} /></div>
+                <Select label="Proyecto" value={fPago.proyecto_id || ''} onChange={v => setFPago({...fPago, proyecto_id: v})} options={[{value:'',label:'Sin proyecto'},...state.proyectos.map(p => ({value:p.id,label:p.nombre}))]} />
               </>}
-
               <div className="flex gap-3 pt-2">
-                <button onClick={closeModal} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium ${darkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'} ${textSecondary} transition-all`}>Cancelar</button>
-                <button onClick={() => modal === 'proyecto' ? saveProyecto(proyectoForm) : modal === 'movimiento' ? saveMovimiento(movimientoForm) : savePago(pagoForm)} disabled={saving} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 transition-all">{saving ? 'Guardando...' : editingId ? 'Actualizar' : 'Crear'}</button>
+                <button onClick={closeModal} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium ${dark ? 'bg-white/5' : 'bg-gray-100'} ${txt2}`}>Cancelar</button>
+                <button onClick={() => modal === 'proyecto' ? saveProyecto() : modal === 'movimiento' ? saveMovimiento() : savePago()} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500 text-white">Guardar</button>
               </div>
             </div>
           </div>
