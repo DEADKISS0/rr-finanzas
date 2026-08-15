@@ -1,19 +1,65 @@
+import { Redis } from '@upstash/redis';
 import { Proyecto, Movimiento, PagoProgramado, FinanzasState, DashboardKPIs } from './types';
 
-// Check if Vercel KV is configured
-const KV_URL = process.env.KV_REST_API_URL;
-const KV_TOKEN = process.env.KV_REST_API_TOKEN;
-const isKVConfigured = !!(KV_URL && KV_TOKEN);
+// Initialize Redis client
+// You need to set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Vercel environment variables
+// Get them from: https://console.upstash.com
+let redis: Redis | null = null;
 
-// Dynamic import for Vercel KV
-async function getKV() {
-  if (!isKVConfigured) return null;
+function getRedis(): Redis | null {
+  if (redis) return redis;
+  
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  
+  if (!url || !token) {
+    console.warn('Upstash Redis not configured. Using in-memory fallback.');
+    return null;
+  }
+  
+  redis = new Redis({ url, token });
+  return redis;
+}
+
+// In-memory fallback for development/testing
+let memoryStore: Record<string, string> = {};
+
+async function getData<T>(key: string): Promise<T | null> {
+  const r = getRedis();
+  if (r) {
+    try {
+      const data = await r.get<string>(key);
+      if (!data) return null;
+      return JSON.parse(data) as T;
+    } catch (e) {
+      console.error('Redis get error:', e);
+      return null;
+    }
+  }
+  
+  // Fallback to memory
+  const data = memoryStore[key];
+  if (!data) return null;
   try {
-    const { kv } = await import('@vercel/kv');
-    return kv;
+    return JSON.parse(data) as T;
   } catch {
     return null;
   }
+}
+
+async function setData(key: string, value: unknown): Promise<void> {
+  const r = getRedis();
+  if (r) {
+    try {
+      await r.set(key, JSON.stringify(value));
+      return;
+    } catch (e) {
+      console.error('Redis set error:', e);
+    }
+  }
+  
+  // Fallback to memory
+  memoryStore[key] = JSON.stringify(value);
 }
 
 const KEYS = {
@@ -23,31 +69,10 @@ const KEYS = {
   ULTIMA_ACTUALIZACION: 'rr:ultima_actualizacion',
 };
 
-// In-memory fallback (for when KV is not configured)
-let memoryStore: Record<string, unknown> = {};
-
-async function getData<T>(key: string): Promise<T | null> {
-  const kv = await getKV();
-  if (kv) {
-    return kv.get<T>(key);
-  }
-  return (memoryStore[key] as T) || null;
-}
-
-async function setData(key: string, value: unknown): Promise<void> {
-  const kv = await getKV();
-  if (kv) {
-    await kv.set(key, value);
-  } else {
-    memoryStore[key] = value;
-  }
-}
-
 // ============ PROYECTOS ============
 
 export async function getProyectos(): Promise<Proyecto[]> {
-  const data = await getData<Proyecto[]>(KEYS.PROYECTOS);
-  return data || [];
+  return (await getData<Proyecto[]>(KEYS.PROYECTOS)) || [];
 }
 
 export async function saveProyectos(proyectos: Proyecto[]): Promise<void> {
@@ -83,8 +108,7 @@ export async function deleteProyecto(id: string): Promise<boolean> {
 // ============ MOVIMIENTOS ============
 
 export async function getMovimientos(): Promise<Movimiento[]> {
-  const data = await getData<Movimiento[]>(KEYS.MOVIMIENTOS);
-  return data || [];
+  return (await getData<Movimiento[]>(KEYS.MOVIMIENTOS)) || [];
 }
 
 export async function saveMovimientos(movimientos: Movimiento[]): Promise<void> {
@@ -120,8 +144,7 @@ export async function deleteMovimiento(id: string): Promise<boolean> {
 // ============ PAGOS ============
 
 export async function getPagos(): Promise<PagoProgramado[]> {
-  const data = await getData<PagoProgramado[]>(KEYS.PAGOS);
-  return data || [];
+  return (await getData<PagoProgramado[]>(KEYS.PAGOS)) || [];
 }
 
 export async function savePagos(pagos: PagoProgramado[]): Promise<void> {
