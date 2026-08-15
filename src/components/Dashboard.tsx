@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 // ============ TYPES ============
 type EstadoProyecto = 'planificacion' | 'activo' | 'pausado' | 'completado' | 'cancelado';
@@ -17,6 +17,7 @@ interface Proyecto {
   fecha_inicio: string;
   fecha_fin: string;
   descripcion: string;
+  servicios: string[];
 }
 
 interface Movimiento {
@@ -39,136 +40,78 @@ interface Pago {
   proyecto_id: string;
 }
 
-// ============ INITIAL DATA FROM EXCEL ============
+// ============ INITIAL DATA (REAL STATE AS OF AUG 2026) ============
+// NO se ha hecho ningún pago aún. Solo hay contrato y adelantos pendientes.
+
 const INITIAL_PROYECTOS: Proyecto[] = [
-  { id: 'wunder', nombre: 'Wunder', cliente: 'Wunder', estado: 'activo', valor_total: 9000000, valor_pagado: 0, fecha_inicio: '2026-07-01', fecha_fin: '2026-12-31', descripcion: 'Servicios de marketing digital completos: video, diseño, redes, web, pauta, SEO' },
-  { id: 'boga', nombre: 'BOGA', cliente: 'BOGA', estado: 'activo', valor_total: 1200000, valor_pagado: 600000, fecha_inicio: '2026-07-15', fecha_fin: '2026-09-30', descripcion: 'Setup completo: branding, video, diseño, redes, web, pauta, SEO' },
-  { id: 'zapatos', nombre: 'ZAPATOS', cliente: 'ZAPATOS', estado: 'activo', valor_total: 900000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-10-31', descripcion: 'Mismo esquema que Wunder, 15-30 días después' },
-  { id: 'amsterdam1', nombre: 'AMSTERDAM #1', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 1000000, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido' },
-  { id: 'amsterdam2', nombre: 'AMSTERDAM #2', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 1000000, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido' },
-  { id: 'amsterdam3', nombre: 'AMSTERDAM #3', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 1000000, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido' },
-  { id: 'globos', nombre: 'GLOBOS', cliente: 'GLOBOS', estado: 'activo', valor_total: 1200000, valor_pagado: 600000, fecha_inicio: '2026-08-01', fecha_fin: '2026-10-31', descripcion: 'Servicios de marketing' },
-  { id: 'rraliados', nombre: 'RR ALIADOS (Interno)', cliente: 'RR ALIADOS', estado: 'activo', valor_total: 0, valor_pagado: 0, fecha_inicio: '2026-07-01', fecha_fin: '2026-12-31', descripcion: 'Proyecto interno - solo costos externos, margen 0%' },
+  { id: 'wunder', nombre: 'Wunder', cliente: 'Wunder', estado: 'activo', valor_total: 9000000, valor_pagado: 0, fecha_inicio: '2026-07-01', fecha_fin: '2026-12-31', descripcion: 'Marketing digital completo: video, diseño, redes, web, pauta, SEO. Retroactivo día 60.', servicios: ['Producción Video', 'Piezas Gráficas', 'Branding', 'Gestión Redes', 'Desarrollo Web', 'Pauta', 'SEO'] },
+  { id: 'boga', nombre: 'BOGA', cliente: 'BOGA', estado: 'activo', valor_total: 1200000, valor_pagado: 0, fecha_inicio: '2026-07-15', fecha_fin: '2026-09-30', descripcion: 'Setup completo. Adelanto pendiente de pago.', servicios: ['Branding', 'Producción Video', 'Diseño', 'Redes', 'Web', 'Pauta', 'SEO'] },
+  { id: 'zapatos', nombre: 'ZAPATOS', cliente: 'ZAPATOS', estado: 'activo', valor_total: 900000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-10-31', descripcion: 'Mismo esquema que Wunder. 15-30 días después.', servicios: ['Producción Video', 'Piezas Gráficas', 'Branding', 'Gestión Redes', 'Desarrollo Web', 'Pauta', 'SEO'] },
+  { id: 'amsterdam1', nombre: 'AMSTERDAM #1', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido. Sin pricing final.', servicios: ['Producción Video', 'Diseño'] },
+  { id: 'amsterdam2', nombre: 'AMSTERDAM #2', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido. Sin pricing final.', servicios: ['Producción Video', 'Diseño'] },
+  { id: 'amsterdam3', nombre: 'AMSTERDAM #3', cliente: 'AMSTERDAM', estado: 'activo', valor_total: 2000000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-11-30', descripcion: 'Producción de video y contenido. Sin pricing final.', servicios: ['Producción Video', 'Diseño'] },
+  { id: 'globos', nombre: 'GLOBOS', cliente: 'GLOBOS', estado: 'activo', valor_total: 1200000, valor_pagado: 0, fecha_inicio: '2026-08-01', fecha_fin: '2026-10-31', descripcion: 'Servicios de marketing. Sin pricing final.', servicios: ['Producción Video', 'Diseño', 'Redes'] },
+  { id: 'flores', nombre: 'FLORES', cliente: 'FLORES', estado: 'planificacion', valor_total: 0, valor_pagado: 0, fecha_inicio: '2026-09-01', fecha_fin: '2026-12-31', descripcion: 'En conversación. Sin pricing definido.', servicios: [] },
 ];
 
+// Solo el movimiento real: saldo inicial en Bancolombia
 const INITIAL_MOVIMIENTOS: Movimiento[] = [
-  // Saldo inicial
-  { id: 'mov001', tipo: 'ingreso', concepto: 'Saldo Bancolombia', monto: 2800000, fecha: '2026-07-15', categoria: 'saldo', proyecto_id: '' },
-  // BOGA ingresos
-  { id: 'mov002', tipo: 'ingreso', concepto: 'BOGA - Adelanto 50%', monto: 600000, fecha: '2026-07-30', categoria: 'servicios', proyecto_id: 'boga' },
-  // AMSTERDAM ingresos
-  { id: 'mov003', tipo: 'ingreso', concepto: 'AMSTERDAM #1 - Adelanto', monto: 1000000, fecha: '2026-08-30', categoria: 'servicios', proyecto_id: 'amsterdam1' },
-  { id: 'mov004', tipo: 'ingreso', concepto: 'AMSTERDAM #2 - Adelanto', monto: 1000000, fecha: '2026-08-30', categoria: 'servicios', proyecto_id: 'amsterdam2' },
-  { id: 'mov005', tipo: 'ingreso', concepto: 'AMSTERDAM #3 - Adelanto', monto: 1000000, fecha: '2026-08-30', categoria: 'servicios', proyecto_id: 'amsterdam3' },
-  { id: 'mov006', tipo: 'ingreso', concepto: 'GLOBOS - Adelanto', monto: 600000, fecha: '2026-08-30', categoria: 'servicios', proyecto_id: 'globos' },
-  // Wunder egresos Jul
-  { id: 'mov010', tipo: 'egreso', concepto: 'Wunder - 50% Branding', monto: 150000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
-  { id: 'mov011', tipo: 'egreso', concepto: 'Wunder - 2 Sesiones camarógrafo', monto: 120000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
-  { id: 'mov012', tipo: 'egreso', concepto: 'Wunder - 2 Sesiones Supervisor', monto: 100000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
-  { id: 'mov013', tipo: 'egreso', concepto: 'Wunder - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
-  { id: 'mov014', tipo: 'egreso', concepto: 'Wunder - 6 Ediciones video', monto: 150000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
-  { id: 'mov015', tipo: 'egreso', concepto: 'Wunder - 6 Portadas Reel', monto: 60000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
-  { id: 'mov016', tipo: 'egreso', concepto: 'Wunder - 2 Sesiones logística', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'wunder' },
-  { id: 'mov017', tipo: 'egreso', concepto: 'Wunder - 6 Piezas Gráficas', monto: 66000, fecha: '2026-08-15', categoria: 'diseno', proyecto_id: 'wunder' },
-  { id: 'mov018', tipo: 'egreso', concepto: 'Wunder - 18 Publicaciones', monto: 150000, fecha: '2026-08-15', categoria: 'redes', proyecto_id: 'wunder' },
-  { id: 'mov019', tipo: 'egreso', concepto: 'Wunder - 25% Landing Page', monto: 160000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'wunder' },
-  { id: 'mov020', tipo: 'egreso', concepto: 'Wunder - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'wunder' },
-  { id: 'mov021', tipo: 'egreso', concepto: 'Wunder - 25% CRM', monto: 175000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'wunder' },
-  { id: 'mov022', tipo: 'egreso', concepto: 'Wunder - 50% Pauta', monto: 300000, fecha: '2026-08-15', categoria: 'marketing', proyecto_id: 'wunder' },
-  { id: 'mov023', tipo: 'egreso', concepto: 'Wunder - 50% SEO & GEO', monto: 150000, fecha: '2026-08-15', categoria: 'marketing', proyecto_id: 'wunder' },
-  // BOGA egresos
-  { id: 'mov030', tipo: 'egreso', concepto: 'BOGA - 1 Sesión camarógrafo', monto: 60000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
-  { id: 'mov031', tipo: 'egreso', concepto: 'BOGA - 1 Sesión Supervisor', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
-  { id: 'mov032', tipo: 'egreso', concepto: 'BOGA - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
-  { id: 'mov033', tipo: 'egreso', concepto: 'BOGA - 3 Ediciones video', monto: 75000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
-  { id: 'mov034', tipo: 'egreso', concepto: 'BOGA - 3 Portadas Reel', monto: 30000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
-  { id: 'mov035', tipo: 'egreso', concepto: 'BOGA - 1 Sesión logística', monto: 25000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'boga' },
-  { id: 'mov036', tipo: 'egreso', concepto: 'BOGA - 25% Landing Page', monto: 160000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'boga' },
-  { id: 'mov037', tipo: 'egreso', concepto: 'BOGA - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'boga' },
-  { id: 'mov038', tipo: 'egreso', concepto: 'BOGA - 25% CRM', monto: 175000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'boga' },
-  // RR Aliados egresos
-  { id: 'mov040', tipo: 'egreso', concepto: 'RR Aliados - 50% Branding', monto: 150000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
-  { id: 'mov041', tipo: 'egreso', concepto: 'RR Aliados - 2 Sesiones camarógrafo', monto: 120000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
-  { id: 'mov042', tipo: 'egreso', concepto: 'RR Aliados - 2 Sesiones Supervisor', monto: 100000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
-  { id: 'mov043', tipo: 'egreso', concepto: 'RR Aliados - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
-  { id: 'mov044', tipo: 'egreso', concepto: 'RR Aliados - 6 Ediciones video', monto: 150000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
-  { id: 'mov045', tipo: 'egreso', concepto: 'RR Aliados - 6 Portadas Reel', monto: 60000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
-  { id: 'mov046', tipo: 'egreso', concepto: 'RR Aliados - 2 Sesiones logística', monto: 50000, fecha: '2026-08-15', categoria: 'produccion', proyecto_id: 'rraliados' },
-  { id: 'mov047', tipo: 'egreso', concepto: 'RR Aliados - 6 Piezas Gráficas', monto: 66000, fecha: '2026-08-15', categoria: 'diseno', proyecto_id: 'rraliados' },
-  { id: 'mov048', tipo: 'egreso', concepto: 'RR Aliados - 25% Landing Page', monto: 160000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'rraliados' },
-  { id: 'mov049', tipo: 'egreso', concepto: 'RR Aliados - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'rraliados' },
-  { id: 'mov050', tipo: 'egreso', concepto: 'RR Aliados - 25% CRM', monto: 175000, fecha: '2026-08-15', categoria: 'desarrollo', proyecto_id: 'rraliados' },
-  { id: 'mov051', tipo: 'egreso', concepto: 'RR Aliados - 50% Pauta', monto: 300000, fecha: '2026-08-15', categoria: 'marketing', proyecto_id: 'rraliados' },
+  { id: 'mov001', tipo: 'ingreso', concepto: 'Saldo inicial Bancolombia', monto: 3600000, fecha: '2026-07-15', categoria: 'saldo', proyecto_id: '' },
 ];
 
+// Pagos programados (Ninguno se ha ejecutado aún)
 const INITIAL_PAGOS: Pago[] = [
-  // Ingresos programados
-  { id: 'pago001', concepto: 'BOGA - Pago saldo 50%', monto: 600000, fecha: '2026-08-30', estado: 'programado', tipo: 'ingreso', proyecto_id: 'boga' },
-  { id: 'pago002', concepto: 'GLOBOS - Pago saldo', monto: 600000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'globos' },
-  { id: 'pago003', concepto: 'AMSTERDAM #1 - Pago saldo', monto: 1000000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam1' },
-  { id: 'pago004', concepto: 'AMSTERDAM #2 - Pago saldo', monto: 1000000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam2' },
-  { id: 'pago005', concepto: 'AMSTERDAM #3 - Pago saldo', monto: 1000000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam3' },
-  { id: 'pago006', concepto: 'BOGA - Mantenimiento mensual', monto: 150000, fecha: '2026-09-15', estado: 'programado', tipo: 'ingreso', proyecto_id: 'boga' },
-  // Egresos programados Wunder Q2
-  { id: 'pago010', concepto: 'Wunder - 50% Branding', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago011', concepto: 'Wunder - 2 Sesiones camarógrafo', monto: 120000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago012', concepto: 'Wunder - 2 Sesiones Supervisor', monto: 100000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago013', concepto: 'Wunder - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago014', concepto: 'Wunder - 6 Ediciones video', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago015', concepto: 'Wunder - 6 Portadas Reel', monto: 60000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago016', concepto: 'Wunder - 2 Sesiones logística', monto: 50000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago017', concepto: 'Wunder - 6 Piezas Gráficas', monto: 66000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago018', concepto: 'Wunder - 18 Publicaciones', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago019', concepto: 'Wunder - 25% Landing Page', monto: 160000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago020', concepto: 'Wunder - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago021', concepto: 'Wunder - 25% CRM', monto: 175000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago022', concepto: 'Wunder - 50% Pauta', monto: 300000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  { id: 'pago023', concepto: 'Wunder - 50% SEO & GEO', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
-  // Egresos ZAPATOS
-  { id: 'pago030', concepto: 'ZAPATOS - 50% Branding', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago031', concepto: 'ZAPATOS - 2 Sesiones camarógrafo', monto: 120000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago032', concepto: 'ZAPATOS - 2 Sesiones Supervisor', monto: 100000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago033', concepto: 'ZAPATOS - 1 Sesión Modelaje', monto: 50000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago034', concepto: 'ZAPATOS - 6 Ediciones video', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago035', concepto: 'ZAPATOS - 6 Portadas Reel', monto: 60000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago036', concepto: 'ZAPATOS - 2 Sesiones logística', monto: 50000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago037', concepto: 'ZAPATOS - 6 Piezas Gráficas', monto: 66000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago038', concepto: 'ZAPATOS - 18 Publicaciones', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago039', concepto: 'ZAPATOS - 25% Landing Page', monto: 160000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago040', concepto: 'ZAPATOS - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago041', concepto: 'ZAPATOS - 25% CRM', monto: 175000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago042', concepto: 'ZAPATOS - 50% Pauta', monto: 300000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  { id: 'pago043', concepto: 'ZAPATOS - 50% SEO & GEO', monto: 150000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'zapatos' },
-  // Egresos BOGA Q2
-  { id: 'pago050', concepto: 'BOGA - 25% Landing Page', monto: 160000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'boga' },
-  { id: 'pago051', concepto: 'BOGA - 25% Pasarela Pago', monto: 137500, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'boga' },
-  { id: 'pago052', concepto: 'BOGA - 25% CRM', monto: 175000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: 'boga' },
-  // Egresos AMSTERDAM Sep
-  { id: 'pago060', concepto: 'AMSTERDAM #1 - Producción video', monto: 290000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam1' },
-  { id: 'pago061', concepto: 'AMSTERDAM #1 - Desarrollo web', monto: 472500, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam1' },
-  { id: 'pago062', concepto: 'AMSTERDAM #2 - Producción video', monto: 290000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam2' },
-  { id: 'pago063', concepto: 'AMSTERDAM #2 - Desarrollo web', monto: 472500, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam2' },
-  { id: 'pago064', concepto: 'AMSTERDAM #3 - Producción video', monto: 290000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam3' },
-  { id: 'pago065', concepto: 'AMSTERDAM #3 - Desarrollo web', monto: 472500, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam3' },
+  // BOGA - Adelanto pendiente
+  { id: 'pago001', concepto: 'BOGA - Adelanto 50%', monto: 600000, fecha: '2026-08-20', estado: 'pendiente', tipo: 'ingreso', proyecto_id: 'boga' },
+  { id: 'pago002', concepto: 'BOGA - Pago saldo 50%', monto: 600000, fecha: '2026-09-05', estado: 'programado', tipo: 'ingreso', proyecto_id: 'boga' },
+  // Wunder - Primer desembolso
+  { id: 'pago010', concepto: 'Wunder - Producción Q1 (video+foto+diseño)', monto: 746000, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago011', concepto: 'Wunder - Desarrollo web 25%', monto: 472500, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago012', concepto: 'Wunder - Pauta publicitaria 50%', monto: 300000, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago013', concepto: 'Wunder - SEO & GEO 50%', monto: 150000, fecha: '2026-08-25', estado: 'pendiente', tipo: 'egreso', proyecto_id: 'wunder' },
+  // Wunder - Segundo desembolso
+  { id: 'pago014', concepto: 'Wunder - Producción Q2', monto: 746000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago015', concepto: 'Wunder - Desarrollo web 25%', monto: 472500, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago016', concepto: 'Wunder - Pauta 50%', monto: 300000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  { id: 'pago017', concepto: 'Wunder - SEO 50%', monto: 150000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'wunder' },
+  // AMSTERDAM - Ingresos esperados
+  { id: 'pago020', concepto: 'AMSTERDAM #1 - Adelanto', monto: 1000000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam1' },
+  { id: 'pago021', concepto: 'AMSTERDAM #2 - Adelanto', monto: 1000000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam2' },
+  { id: 'pago022', concepto: 'AMSTERDAM #3 - Adelanto', monto: 1000000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'amsterdam3' },
+  // AMSTERDAM - Egresos estimados
+  { id: 'pago023', concepto: 'AMSTERDAM #1 - Producción video', monto: 500000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam1' },
+  { id: 'pago024', concepto: 'AMSTERDAM #2 - Producción video', monto: 500000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam2' },
+  { id: 'pago025', concepto: 'AMSTERDAM #3 - Producción video', monto: 500000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'amsterdam3' },
+  // GLOBOS
+  { id: 'pago030', concepto: 'GLOBOS - Adelanto', monto: 600000, fecha: '2026-09-01', estado: 'programado', tipo: 'ingreso', proyecto_id: 'globos' },
+  { id: 'pago031', concepto: 'GLOBOS - Producción', monto: 300000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: 'globos' },
+  // Pagos fijos empresa
+  { id: 'pago040', concepto: 'Manuel - Quincena 1', monto: 200000, fecha: '2026-08-15', estado: 'pendiente', tipo: 'egreso', proyecto_id: '' },
+  { id: 'pago041', concepto: 'Samuel - Quincena 1', monto: 100000, fecha: '2026-08-15', estado: 'pendiente', tipo: 'egreso', proyecto_id: '' },
+  { id: 'pago042', concepto: 'Manuel - Quincena 2', monto: 200000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
+  { id: 'pago043', concepto: 'Samuel - Quincena 2', monto: 100000, fecha: '2026-08-30', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
+  { id: 'pago044', concepto: 'Manuel - Quincena 3', monto: 200000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
+  { id: 'pago045', concepto: 'Samuel - Quincena 3', monto: 100000, fecha: '2026-09-15', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
+  { id: 'pago046', concepto: 'Manuel - Quincena 4', monto: 200000, fecha: '2026-09-30', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
+  { id: 'pago047', concepto: 'Samuel - Quincena 4', monto: 100000, fecha: '2026-09-30', estado: 'programado', tipo: 'egreso', proyecto_id: '' },
 ];
 
 // ============ LOCAL STORAGE ============
-const STORAGE_KEY = 'rr-finanzas-v2';
+const STORAGE_KEY = 'rr-finanzas-v3';
 
 interface AppState {
   proyectos: Proyecto[];
   movimientos: Movimiento[];
   pagos: Pago[];
-  initialized: boolean;
 }
 
 function loadState(): AppState {
-  if (typeof window === 'undefined') return { proyectos: INITIAL_PROYECTOS, movimientos: INITIAL_MOVIMIENTOS, pagos: INITIAL_PAGOS, initialized: false };
+  if (typeof window === 'undefined') return { proyectos: INITIAL_PROYECTOS, movimientos: INITIAL_MOVIMIENTOS, pagos: INITIAL_PAGOS };
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try { return JSON.parse(saved); } catch { /* ignore */ }
   }
-  return { proyectos: INITIAL_PROYECTOS, movimientos: INITIAL_MOVIMIENTOS, pagos: INITIAL_PAGOS, initialized: true };
+  return { proyectos: INITIAL_PROYECTOS, movimientos: INITIAL_MOVIMIENTOS, pagos: INITIAL_PAGOS };
 }
 
 function saveState(state: AppState) {
@@ -186,7 +129,7 @@ const genId = () => Math.random().toString(36).substr(2, 9);
 
 // ============ COMPONENT ============
 export default function Dashboard() {
-  const [state, setState] = useState<AppState>({ proyectos: [], movimientos: [], pagos: [], initialized: false });
+  const [state, setState] = useState<AppState>({ proyectos: [], movimientos: [], pagos: [] });
   const [tab, setTab] = useState<'resumen' | 'proyectos' | 'movimientos' | 'pagos' | 'cronograma' | 'brechas'>('resumen');
   const [modal, setModal] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -199,8 +142,7 @@ export default function Dashboard() {
   const [fPago, setFPago] = useState<Partial<Pago>>({});
 
   useEffect(() => {
-    const s = loadState();
-    setState(s);
+    setState(loadState());
     setLoaded(true);
   }, []);
 
@@ -219,7 +161,7 @@ export default function Dashboard() {
       if (type === 'pago') setFPago(item as Pago);
     } else {
       setEditId(null);
-      if (type === 'proyecto') setFProyecto({ estado: 'activo' });
+      if (type === 'proyecto') setFProyecto({ estado: 'activo', servicios: [] });
       if (type === 'movimiento') setFMov({ tipo: 'egreso', fecha: new Date().toISOString().split('T')[0] });
       if (type === 'pago') setFPago({ tipo: 'egreso', estado: 'pendiente', fecha: new Date().toISOString().split('T')[0] });
     }
@@ -282,20 +224,37 @@ export default function Dashboard() {
     const egrMes = pagosMes.filter(p => p.tipo === 'egreso').reduce((s, p) => s + p.monto, 0);
     saldoAcumulado += ingMes - egrMes;
     
-    mesesProyeccion.push({
-      mes: mesStr,
-      ingresos: ingMes,
-      egresos: egrMes,
-      saldo: saldoAcumulado,
-      brecha: saldoAcumulado < 0,
-    });
+    mesesProyeccion.push({ mes: mesStr, ingresos: ingMes, egresos: egrMes, saldo: saldoAcumulado, brecha: saldoAcumulado < 0 });
   }
 
-  // Pagos próximos 30 días
-  const pagosProximos = state.pagos
-    .filter(p => p.estado !== 'pagado')
-    .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-    .slice(0, 15);
+  // Pagos próximos
+  const pagosProximos = state.pagos.filter(p => p.estado !== 'pagado').sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()).slice(0, 15);
+
+  // Export Excel
+  const exportExcel = async () => {
+    const XLSX = await import('xlsx');
+    const wb = XLSX.utils.book_new();
+
+    const wsProy = XLSX.utils.json_to_sheet(state.proyectos.map(p => ({ Proyecto: p.nombre, Cliente: p.cliente, Estado: p.estado, 'Valor Total': p.valor_total, Pagado: p.valor_pagado, Pendiente: p.valor_total - p.valor_pagado, 'Fecha Inicio': p.fecha_inicio, 'Fecha Fin': p.fecha_fin, Descripción: p.descripcion })));
+    XLSX.utils.book_append_sheet(wb, wsProy, 'Proyectos');
+
+    const wsMov = XLSX.utils.json_to_sheet(state.movimientos.map(m => ({ Fecha: m.fecha, Tipo: m.tipo, Concepto: m.concepto, Monto: m.tipo === 'ingreso' ? m.monto : -m.monto, Categoría: m.categoria, Proyecto: m.proyecto_id })));
+    XLSX.utils.book_append_sheet(wb, wsMov, 'Movimientos');
+
+    const wsPagos = XLSX.utils.json_to_sheet(state.pagos.map(p => ({ Concepto: p.concepto, Tipo: p.tipo, Monto: p.monto, Fecha: p.fecha, Estado: p.estado, Proyecto: p.proyecto_id })));
+    XLSX.utils.book_append_sheet(wb, wsPagos, 'Pagos Programados');
+
+    XLSX.writeFile(wb, `RR_Finanzas_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  // Mouse tracking for interactive background
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    e.currentTarget.style.setProperty('--mouse-x', `${x}%`);
+    e.currentTarget.style.setProperty('--mouse-y', `${y}%`);
+  };
 
   if (!loaded) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center"><div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div></div>;
 
@@ -316,26 +275,26 @@ export default function Dashboard() {
   );
 
   return (
-    <div className={`min-h-screen ${bg}`}>
+    <div className={`min-h-screen ${bg} bg-gradient-interactive`} onMouseMove={handleMouseMove}>
       {/* HEADER */}
       <header className={`border-b ${border} ${dark ? 'bg-[#0a0a0f]/90' : 'bg-white/90'} backdrop-blur-xl sticky top-0 z-40`}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center"><span className="text-white font-bold text-xs">RR</span></div>
-            <div><h1 className={`text-sm font-bold ${txt}`}>RR ALIADOS</h1><p className={`text-[10px] ${txt3}`}>Control Financiero CEO</p></div>
+            <img src="/logo.svg" alt="RR ALIADOS" className="w-9 h-9 rounded-lg" />
+            <div><h1 className={`text-sm font-bold ${txt}`}>RR ALIADOS</h1><p className={`text-[10px] ${txt3}`}>Control Financiero</p></div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => { localStorage.removeItem(STORAGE_KEY); location.reload(); }} className={`px-3 py-1.5 rounded-lg text-xs ${dark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>Resetear datos</button>
-            <button onClick={() => setDark(!dark)} className={`p-2 rounded-lg ${dark ? 'bg-white/5' : 'bg-gray-100'}`}>{dark ? '☀️' : '🌙'}</button>
+            <button onClick={exportExcel} className={`px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 btn-press shadow-lg shadow-green-500/20`}>Exportar Excel</button>
+            <button onClick={() => setDark(!dark)} className={`p-2.5 rounded-xl btn-press ${dark ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>{dark ? '☀️' : '🌙'}</button>
           </div>
         </div>
       </header>
 
       {/* TABS */}
-      <div className={`border-b ${border} sticky top-[53px] z-30 ${dark ? 'bg-[#0a0a0f]' : 'bg-white'}`}>
+      <div className={`border-b ${border} sticky top-[53px] z-30 glass ${dark ? 'bg-[#0a0a0f]/80' : 'bg-white/80'}`}>
         <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
           {([['resumen', 'Resumen'], ['proyectos', 'Proyectos'], ['movimientos', 'Movimientos'], ['pagos', 'Pagos'], ['cronograma', 'Cronograma'], ['brechas', 'Brechas 6M']] as [string, string][]).map(([k, l]) => (
-            <button key={k} onClick={() => setTab(k as typeof tab)} className={`px-4 py-3 text-xs font-medium border-b-2 whitespace-nowrap ${tab === k ? 'border-red-500 text-red-400' : `border-transparent ${txt2}`}`}>{l}</button>
+            <button key={k} onClick={() => setTab(k as typeof tab)} className={`px-4 py-3 text-xs font-medium border-b-2 whitespace-nowrap tab-indicator ${tab === k ? 'active text-red-400' : `border-transparent ${txt2} hover:${txt}`}`}>{l}</button>
           ))}
         </div>
       </div>
@@ -345,10 +304,10 @@ export default function Dashboard() {
         {tab === 'resumen' && (
           <>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className={`${card} border ${border} rounded-2xl p-5`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Disponible</p><p className={`text-2xl font-bold ${txt}`}>{fmt(disponible)}</p><p className={`text-xs ${txt3}`}>Bancolombia</p></div>
-              <div className={`${card} border ${border} rounded-2xl p-5`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Runway</p><p className={`text-2xl font-bold ${runway >= 8 ? 'text-green-400' : runway >= 4 ? 'text-yellow-400' : 'text-red-400'}`}>{runway} meses</p><p className={`text-xs ${txt3}`}>Burn {fmt(burnMensual)}/mes</p></div>
-              <div className={`${card} border ${border} rounded-2xl p-5`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Proyectos Activos</p><p className={`text-2xl font-bold ${txt}`}>{state.proyectos.filter(p => p.estado === 'activo').length}</p><p className={`text-xs ${txt3}`}>{state.proyectos.filter(p => p.estado === 'activo').map(p => p.nombre).join(', ')}</p></div>
-              <div className={`${card} border ${border} rounded-2xl p-5`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Pagos Pendientes</p><p className={`text-2xl font-bold ${txt}`}>{state.pagos.filter(p => p.estado !== 'pagado').length}</p><p className={`text-xs ${txt3}`}>{fmt(state.pagos.filter(p => p.estado !== 'pagado' && p.tipo === 'egreso').reduce((s, p) => s + p.monto, 0))} por pagar</p></div>
+              <div className={`${card} border ${border} rounded-2xl p-5 card-hover animate-fadeInUp stagger-1`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Disponible</p><p className={`text-2xl font-bold ${txt} count-up`}>{fmt(disponible)}</p><p className={`text-xs ${txt3}`}>Bancolombia</p></div>
+              <div className={`${card} border ${border} rounded-2xl p-5 card-hover animate-fadeInUp stagger-2`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Runway</p><p className={`text-2xl font-bold ${runway >= 8 ? 'text-green-400' : runway >= 4 ? 'text-yellow-400' : 'text-red-400'} count-up`}>{runway} meses</p><p className={`text-xs ${txt3}`}>Burn {fmt(burnMensual)}/mes</p></div>
+              <div className={`${card} border ${border} rounded-2xl p-5 card-hover animate-fadeInUp stagger-3`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Proyectos Activos</p><p className={`text-2xl font-bold ${txt} count-up`}>{state.proyectos.filter(p => p.estado === 'activo').length}</p><p className={`text-xs ${txt3}`}>{state.proyectos.filter(p => p.estado === 'activo').map(p => p.nombre).join(', ')}</p></div>
+              <div className={`${card} border ${border} rounded-2xl p-5 card-hover animate-fadeInUp stagger-4`}><p className={`text-[10px] uppercase tracking-widest ${txt3} mb-2`}>Pagos Pendientes</p><p className={`text-2xl font-bold ${txt} count-up`}>{state.pagos.filter(p => p.estado !== 'pagado').length}</p><p className={`text-xs ${txt3}`}>{fmt(state.pagos.filter(p => p.estado !== 'pagado' && p.tipo === 'egreso').reduce((s, p) => s + p.monto, 0))} por pagar</p></div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -363,7 +322,7 @@ export default function Dashboard() {
                           <span className={`text-sm font-bold ${dias < 0 ? 'text-red-400' : dias <= 7 ? 'text-yellow-400' : 'text-blue-400'}`}>{new Date(p.fecha).getDate()}</span>
                           <span className={`text-[8px] ${txt3}`}>{new Date(p.fecha).toLocaleDateString('es-CO', { month: 'short' })}</span>
                         </div>
-                        <div className="flex-1 min-w-0"><p className={`text-xs font-medium ${txt} truncate`}>{p.concepto}</p><p className={`text-[10px] ${dias < 0 ? 'text-red-400' : txt3}`}>{dias < 0 ? `Vencido ${-dias}d` : `En ${dias}d`}</p></div>
+                        <div className="flex-1"><p className={`text-xs font-medium ${txt} truncate`}>{p.concepto}</p><p className={`text-[10px] ${dias < 0 ? 'text-red-400' : txt3}`}>{dias < 0 ? `Vencido ${-dias}d` : `En ${dias}d`}</p></div>
                         <span className={`text-xs font-bold ${p.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{p.tipo === 'ingreso' ? '+' : '-'}{fmt(p.monto)}</span>
                       </div>
                     );
@@ -377,7 +336,7 @@ export default function Dashboard() {
                   {state.movimientos.slice(-10).reverse().map(m => (
                     <div key={m.id} className="px-4 py-3 flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${m.tipo === 'ingreso' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>{m.tipo === 'ingreso' ? '↑' : '↓'}</div>
-                      <div className="flex-1 min-w-0"><p className={`text-xs font-medium ${txt} truncate`}>{m.concepto}</p><p className={`text-[10px] ${txt3}`}>{fmtDate(m.fecha)}</p></div>
+                      <div className="flex-1"><p className={`text-xs font-medium ${txt}`}>{m.concepto}</p><p className={`text-[10px] ${txt3}`}>{fmtDate(m.fecha)}</p></div>
                       <span className={`text-xs font-bold ${m.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{m.tipo === 'ingreso' ? '+' : '-'}{fmt(m.monto)}</span>
                     </div>
                   ))}
@@ -390,18 +349,19 @@ export default function Dashboard() {
         {/* ============ PROYECTOS ============ */}
         {tab === 'proyectos' && (
           <>
-            <div className="flex justify-between mb-4"><h2 className={`text-lg font-bold ${txt}`}>Proyectos</h2><button onClick={() => openModal('proyecto')} className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white">+ Nuevo</button></div>
+            <div className="flex justify-between mb-4"><h2 className={`text-lg font-bold ${txt}`}>Proyectos</h2><button onClick={() => openModal('proyecto')} className="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 btn-press shadow-lg shadow-red-500/20">+ Nuevo Proyecto</button></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {state.proyectos.map(p => (
                 <div key={p.id} className={`${card} border ${border} rounded-2xl p-5`}>
-                  <div className="flex justify-between mb-3"><div><h3 className={`text-sm font-semibold ${txt}`}>{p.nombre}</h3><p className={`text-xs ${txt3}`}>{p.cliente}</p></div><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${p.estado === 'activo' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'}`}>{p.estado}</span></div>
+                  <div className="flex justify-between mb-3"><div><h3 className={`text-sm font-semibold ${txt}`}>{p.nombre}</h3><p className={`text-xs ${txt3}`}>{p.cliente}</p></div><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${p.estado === 'activo' ? 'bg-green-500/10 text-green-400' : p.estado === 'planificacion' ? 'bg-blue-500/10 text-blue-400' : 'bg-gray-500/10 text-gray-400'}`}>{p.estado}</span></div>
                   <p className={`text-xs ${txt2} mb-3`}>{p.descripcion}</p>
                   <div className="space-y-1 mb-3">
-                    <div className="flex justify-between text-xs"><span className={txt3}>Valor</span><span className={txt}>{fmt(p.valor_total)}</span></div>
+                    <div className="flex justify-between text-xs"><span className={txt3}>Valor Total</span><span className={txt}>{fmt(p.valor_total)}</span></div>
                     <div className="flex justify-between text-xs"><span className={txt3}>Pagado</span><span className="text-green-400">{fmt(p.valor_pagado)}</span></div>
                     <div className="flex justify-between text-xs"><span className={txt3}>Pendiente</span><span className="text-yellow-400">{fmt(p.valor_total - p.valor_pagado)}</span></div>
                   </div>
                   <div className="w-full bg-white/5 rounded-full h-1.5 mb-3"><div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${p.valor_total > 0 ? (p.valor_pagado / p.valor_total) * 100 : 0}%` }}></div></div>
+                  {p.servicios.length > 0 && <div className="flex flex-wrap gap-1 mb-3">{p.servicios.map(s => <span key={s} className={`px-2 py-0.5 rounded text-[9px] ${dark ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>{s}</span>)}</div>}
                   <div className="flex gap-2"><button onClick={() => openModal('proyecto', p)} className={`flex-1 px-3 py-1.5 rounded-lg text-xs ${dark ? 'bg-white/5' : 'bg-gray-100'} ${txt2}`}>Editar</button><button onClick={() => deleteItem('proyectos', p.id)} className="px-3 py-1.5 rounded-lg text-xs bg-red-500/10 text-red-400">Eliminar</button></div>
                 </div>
               ))}
@@ -412,7 +372,7 @@ export default function Dashboard() {
         {/* ============ MOVIMIENTOS ============ */}
         {tab === 'movimientos' && (
           <>
-            <div className="flex justify-between mb-4"><h2 className={`text-lg font-bold ${txt}`}>Movimientos</h2><button onClick={() => openModal('movimiento')} className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white">+ Nuevo</button></div>
+            <div className="flex justify-between mb-4"><h2 className={`text-lg font-bold ${txt}`}>Movimientos</h2><button onClick={() => openModal('movimiento')} className="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 btn-press shadow-lg shadow-red-500/20">+ Nuevo Movimiento</button></div>
             <div className={`${card} border ${border} rounded-2xl overflow-hidden`}>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -420,7 +380,6 @@ export default function Dashboard() {
                     <th className={`text-left px-4 py-3 text-[10px] uppercase ${txt3}`}>Fecha</th>
                     <th className={`text-left px-4 py-3 text-[10px] uppercase ${txt3}`}>Tipo</th>
                     <th className={`text-left px-4 py-3 text-[10px] uppercase ${txt3}`}>Concepto</th>
-                    <th className={`text-left px-4 py-3 text-[10px] uppercase ${txt3}`}>Categoría</th>
                     <th className={`text-right px-4 py-3 text-[10px] uppercase ${txt3}`}>Monto</th>
                     <th className={`text-right px-4 py-3 text-[10px] uppercase ${txt3}`}>Acciones</th>
                   </tr></thead>
@@ -430,7 +389,6 @@ export default function Dashboard() {
                         <td className={`px-4 py-3 text-xs ${txt2}`}>{fmtDate(m.fecha)}</td>
                         <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${m.tipo === 'ingreso' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>{m.tipo}</span></td>
                         <td className={`px-4 py-3 text-xs font-medium ${txt}`}>{m.concepto}</td>
-                        <td className={`px-4 py-3 text-xs ${txt2}`}>{m.categoria}</td>
                         <td className={`px-4 py-3 text-xs font-bold text-right ${m.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{m.tipo === 'ingreso' ? '+' : '-'}{fmt(m.monto)}</td>
                         <td className="px-4 py-3 text-right"><button onClick={() => openModal('movimiento', m)} className={`text-xs ${txt3} hover:${txt}`}>Editar</button></td>
                       </tr>
@@ -445,7 +403,7 @@ export default function Dashboard() {
         {/* ============ PAGOS ============ */}
         {tab === 'pagos' && (
           <>
-            <div className="flex justify-between mb-4"><h2 className={`text-lg font-bold ${txt}`}>Pagos</h2><button onClick={() => openModal('pago')} className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500 text-white">+ Nuevo</button></div>
+            <div className="flex justify-between mb-4"><h2 className={`text-lg font-bold ${txt}`}>Pagos Programados</h2><button onClick={() => openModal('pago')} className="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 btn-press shadow-lg shadow-red-500/20">+ Nuevo Pago</button></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {state.pagos.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()).map(p => {
                 const vencido = p.estado !== 'pagado' && new Date(p.fecha) < hoy;
@@ -468,13 +426,10 @@ export default function Dashboard() {
         {/* ============ CRONOGRAMA ============ */}
         {tab === 'cronograma' && (
           <>
-            <h2 className={`text-lg font-bold ${txt} mb-4`}>Cronograma de Pagos (Ago-Dic 2026)</h2>
+            <h2 className={`text-lg font-bold ${txt} mb-4`}>Cronograma Ago-Dic 2026</h2>
             <div className="space-y-6">
               {[8, 9, 10, 11, 12].map(mes => {
-                const pagosMes = state.pagos.filter(p => {
-                  const f = new Date(p.fecha);
-                  return f.getMonth() + 1 === mes && f.getFullYear() === 2026 && p.estado !== 'pagado';
-                }).sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+                const pagosMes = state.pagos.filter(p => { const f = new Date(p.fecha); return f.getMonth() + 1 === mes && f.getFullYear() === 2026 && p.estado !== 'pagado'; }).sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
                 const totalIng = pagosMes.filter(p => p.tipo === 'ingreso').reduce((s, p) => s + p.monto, 0);
                 const totalEgr = pagosMes.filter(p => p.tipo === 'egreso').reduce((s, p) => s + p.monto, 0);
                 const nMes = new Date(2026, mes - 1).toLocaleDateString('es-CO', { month: 'long' });
@@ -487,7 +442,7 @@ export default function Dashboard() {
                     <div className="divide-y divide-white/[0.04]">
                       {pagosMes.map(p => (
                         <div key={p.id} className="px-4 py-3 flex items-center gap-3">
-                          <div className={`w-10 text-center`}><span className={`text-lg font-bold ${txt}`}>{new Date(p.fecha).getDate()}</span><br /><span className={`text-[9px] ${txt3}`}>{new Date(p.fecha).toLocaleDateString('es-CO', { weekday: 'short' })}</span></div>
+                          <div className="w-10 text-center"><span className={`text-lg font-bold ${txt}`}>{new Date(p.fecha).getDate()}</span><br /><span className={`text-[9px] ${txt3}`}>{new Date(p.fecha).toLocaleDateString('es-CO', { weekday: 'short' })}</span></div>
                           <div className="flex-1"><p className={`text-xs font-medium ${txt}`}>{p.concepto}</p></div>
                           <span className={`text-xs font-bold ${p.tipo === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>{p.tipo === 'ingreso' ? '+' : '-'}{fmt(p.monto)}</span>
                         </div>
@@ -529,7 +484,7 @@ export default function Dashboard() {
                     <div className="flex justify-between text-xs"><span className={txt3}>Ingresos</span><span className="text-green-400">+{fmt(m.ingresos)}</span></div>
                     <div className="flex justify-between text-xs"><span className={txt3}>Egresos</span><span className="text-red-400">-{fmt(m.egresos)}</span></div>
                     <div className={`flex justify-between text-xs pt-2 border-t ${border}`}><span className="font-semibold">Neto</span><span className={`font-bold ${m.ingresos - m.egresos >= 0 ? 'text-green-400' : 'text-red-400'}`}>{fmt(m.ingresos - m.egresos)}</span></div>
-                    <div className={`flex justify-between text-sm pt-2 border-t ${border}`}><span className="font-bold">Saldo Acumulado</span><span className={`font-bold ${m.saldo >= 0 ? 'text-green-400' : 'text-red-400'}`}>{fmt(m.saldo)}</span></div>
+                    <div className={`flex justify-between text-sm pt-2 border-t ${border}`}><span className="font-bold">Saldo</span><span className={`font-bold ${m.saldo >= 0 ? 'text-green-400' : 'text-red-400'}`}>{fmt(m.saldo)}</span></div>
                   </div>
                 </div>
               ))}
@@ -540,8 +495,8 @@ export default function Dashboard() {
 
       {/* ============ MODALS ============ */}
       {modal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className={`${card} border ${border} rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto`}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 modal-backdrop">
+          <div className={`${card} border ${border} rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto modal-content shadow-2xl`}>
             <div className={`p-5 border-b ${border} flex justify-between`}><h3 className={`text-sm font-bold ${txt}`}>{editId ? 'Editar' : 'Nuevo'} {modal === 'proyecto' ? 'Proyecto' : modal === 'movimiento' ? 'Movimiento' : 'Pago'}</h3><button onClick={closeModal} className={txt2}>✕</button></div>
             <div className="p-5 space-y-4">
               {modal === 'proyecto' && <>
@@ -563,10 +518,7 @@ export default function Dashboard() {
                   <Input label="Monto" value={fMov.monto || ''} onChange={v => setFMov({...fMov, monto: Number(v)})} type="number" />
                 </div>
                 <Input label="Concepto" value={fMov.concepto || ''} onChange={v => setFMov({...fMov, concepto: v})} />
-                <div className="grid grid-cols-2 gap-3">
-                  <Input label="Fecha" value={fMov.fecha || ''} onChange={v => setFMov({...fMov, fecha: v})} type="date" />
-                  <Input label="Categoría" value={fMov.categoria || ''} onChange={v => setFMov({...fMov, categoria: v})} />
-                </div>
+                <Input label="Fecha" value={fMov.fecha || ''} onChange={v => setFMov({...fMov, fecha: v})} type="date" />
                 <Select label="Proyecto" value={fMov.proyecto_id || ''} onChange={v => setFMov({...fMov, proyecto_id: v})} options={[{value:'',label:'Sin proyecto'},...state.proyectos.map(p => ({value:p.id,label:p.nombre}))]} />
               </>}
               {modal === 'pago' && <>
@@ -582,8 +534,8 @@ export default function Dashboard() {
                 <Select label="Proyecto" value={fPago.proyecto_id || ''} onChange={v => setFPago({...fPago, proyecto_id: v})} options={[{value:'',label:'Sin proyecto'},...state.proyectos.map(p => ({value:p.id,label:p.nombre}))]} />
               </>}
               <div className="flex gap-3 pt-2">
-                <button onClick={closeModal} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium ${dark ? 'bg-white/5' : 'bg-gray-100'} ${txt2}`}>Cancelar</button>
-                <button onClick={() => modal === 'proyecto' ? saveProyecto() : modal === 'movimiento' ? saveMovimiento() : savePago()} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500 text-white">Guardar</button>
+                <button onClick={closeModal} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium btn-press ${dark ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'} ${txt2}`}>Cancelar</button>
+                <button onClick={() => modal === 'proyecto' ? saveProyecto() : modal === 'movimiento' ? saveMovimiento() : savePago()} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 btn-press shadow-lg shadow-red-500/20">Guardar</button>
               </div>
             </div>
           </div>
