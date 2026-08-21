@@ -1,0 +1,2 @@
+// Keep the requested clickable Calendar view active when legacy month arrows call render().
+(function(){'use strict';if(!window.RRV14||!window.RR_V13_STATE)return;const previous=window.render;window.render=function(){if(window.RR_V13_STATE.tab==='calendar')return window.RRV14.tab('calendar');return previous.apply(this,arguments)};})();
