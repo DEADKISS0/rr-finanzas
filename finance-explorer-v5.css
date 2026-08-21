@@ -1,0 +1,34 @@
+/* RR Aliados — Financial Explorer v5 */
+.sectionIntro{max-width:76ch;margin:.45rem 0 0;color:var(--paper-soft);font-size:13px;line-height:1.6}
+.desktopTableWrap{width:100%;max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,255,255,.012);scrollbar-gutter:stable}
+.dataTable{width:100%;border-collapse:separate;border-spacing:0;table-layout:auto;font-size:12px;line-height:1.4}
+.dataTable th,.dataTable td{padding:12px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);border-right:1px solid rgba(56,36,63,.55);white-space:normal;overflow-wrap:anywhere;min-width:110px}
+.dataTable th:first-child,.dataTable td:first-child{min-width:130px;position:sticky;left:0;z-index:2;background:var(--ink-2)}
+.dataTable thead th{position:sticky;top:0;z-index:3;background:var(--surface);font:600 9px/1.3 var(--mono);color:var(--paper-soft);text-transform:uppercase;letter-spacing:.02em}
+.dataTable thead th:first-child{z-index:4;background:var(--surface)}
+.dataTable tr:last-child td{border-bottom:0}.dataTable th:last-child,.dataTable td:last-child{border-right:0}
+.dataTable td small{display:block;margin-top:5px;color:var(--muted);font-size:9px;line-height:1.45}
+.dataTable .plus,.plus{color:var(--mint)}.dataTable .minus,.minus{color:var(--danger)}
+.dataTable .dangerRow td{background:rgba(255,138,121,.045)}.dataTable .dangerRow td:first-child{background:#241217}
+.runwayMatrix{min-width:max(100%,1100px)}
+.runwayMatrix th,.runwayMatrix td{min-width:118px}.runwayMatrix th:first-child,.runwayMatrix td:first-child{min-width:126px}
+.runwayProjectTable td:nth-child(5){min-width:280px}
+.runwayControls{margin:0 0 18px;padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,255,255,.018)}
+.runwayControlHead{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:12px}.runwayControlHead>div{display:flex;gap:6px}
+.projectChecks{display:flex;flex-wrap:wrap;gap:7px}.projectCheck{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:8px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);cursor:pointer}.projectCheck.on{border-color:var(--fuchsia-soft);background:rgba(190,7,109,.08);color:var(--paper)}.projectCheck input{accent-color:var(--fuchsia);margin:0}
+.runwayOptions{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}.runwayOptions label{display:flex;gap:8px;align-items:center;color:var(--paper-soft);font-size:12px}.runwayOptions select{min-height:40px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;color:var(--paper);padding:7px 9px}
+.driverList{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.driverList span{display:block;padding:10px;border-top:1px solid rgba(222,209,22,.25);background:rgba(255,255,255,.018);font-size:11px}.driverList b{display:block;color:var(--paper);margin-bottom:3px}
+.accountingCols section>h3,.auditSections h3{font-size:20px;letter-spacing:-.02em;margin:0 0 12px}.auditActions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.auditActions article{padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:rgba(255,255,255,.018)}.auditActions article.warn{border-color:rgba(222,209,22,.28)}.auditActions article b{font-size:13px}.auditActions article p{margin:5px 0 0;color:var(--paper-soft);font-size:11px;line-height:1.55}
+.auditScore{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.auditScore article{padding:16px;border-top:2px solid var(--line-strong);background:rgba(255,255,255,.018);border-radius:0 0 var(--radius-sm) var(--radius-sm)}.auditScore article.critical{border-top-color:var(--danger)}.auditScore span{display:block;color:var(--muted);font:600 8px/1.3 var(--mono)}.auditScore b{display:block;margin:6px 0;font-size:20px}.auditScore p{margin:0;color:var(--paper-soft);font-size:11px;line-height:1.5}
+.auditSections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}.auditSections section{padding:18px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,255,255,.014)}.auditSections p,.auditSections li{color:var(--paper-soft);font-size:12px;line-height:1.6}.auditSections ul,.auditSections ol{margin:0;padding-left:20px}.auditSections li+li{margin-top:7px}
+/* Desktop table repair: older grid tables should never clip content. */
+@media(min-width:901px){
+  .accTable,.pipelineTable{width:100%;max-width:100%;overflow:auto!important}
+  .accRow,.pipeRow{min-width:0!important;width:100%;grid-template-columns:minmax(125px,1.15fr) minmax(105px,.85fr) minmax(105px,.82fr) minmax(105px,.82fr) minmax(100px,.75fr) minmax(110px,.85fr) minmax(240px,2fr)!important}
+  .accTable.mini .accRow{grid-template-columns:minmax(110px,.8fr) minmax(90px,.7fr) minmax(180px,1.7fr) minmax(120px,1fr) minmax(130px,1fr)!important}
+  .accTable.monthly .accRow{grid-template-columns:repeat(5,minmax(120px,1fr))!important}
+  .accTable.ledger .accRow{grid-template-columns:minmax(115px,.9fr) minmax(150px,1.3fr) minmax(100px,.7fr) minmax(125px,.9fr) minmax(115px,.9fr) minmax(250px,2fr)!important}
+  .accRow>span,.pipeRow>span{overflow:visible!important;white-space:normal!important;overflow-wrap:anywhere}
+}
+@media(max-width:1100px){.driverList{grid-template-columns:1fr 1fr}.auditScore{grid-template-columns:1fr 1fr}.auditSections{grid-template-columns:1fr}.auditActions{grid-template-columns:1fr}}
+@media(max-width:640px){.runwayControlHead{align-items:flex-start;flex-direction:column}.projectChecks{gap:6px}.projectCheck{border-radius:10px;width:calc(50% - 3px);justify-content:flex-start}.runwayOptions{align-items:stretch;flex-direction:column}.runwayOptions label{justify-content:space-between}.runwayOptions select{max-width:60%}.driverList,.auditScore{grid-template-columns:1fr}.desktopTableWrap{margin-inline:-14px;width:calc(100% + 28px);max-width:none;border-radius:0;border-left:0;border-right:0}.dataTable{min-width:760px}.dataTable th,.dataTable td{font-size:11px;padding:10px}.runwayProjectTable{min-width:720px}}
