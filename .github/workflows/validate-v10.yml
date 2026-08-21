@@ -1,0 +1,18 @@
+name: Validate V10
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'final-v10.js'
+      - 'index.html'
+      - '.github/workflows/validate-v10.yml'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check final V10 syntax
+        run: node --check final-v10.js
