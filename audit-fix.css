@@ -1,0 +1,147 @@
+/* RR Aliados — responsive audit fixes
+   Impeccable audit: clarity, no hidden horizontal dependencies on core financial data. */
+
+.viewGuide{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:18px;
+  align-items:start;
+  margin:0 0 18px;
+  padding:14px 16px;
+  border-top:1px solid var(--line-strong);
+  background:rgba(255,255,255,.018);
+  border-radius:0 0 var(--radius-sm) var(--radius-sm);
+}
+.viewGuide b{display:block;margin-bottom:3px;font-size:13px;color:var(--paper)}
+.viewGuide p{margin:0;max-width:76ch;color:var(--paper-soft);font-size:12px;line-height:1.55}
+.viewGuide small{font:600 9px/1.35 var(--mono);color:var(--muted);white-space:nowrap}
+
+.headerActions button,.tabs button{white-space:nowrap}
+.kicker>span,.money>span,.money>b,.pipeMini b,.accControl>strong,.metric strong{min-width:0;overflow-wrap:anywhere}
+.kicker>span:last-child{text-align:right}
+.card p,.next,.panel p,.panel li,.accRow small,.pipeRow small,.note{overflow-wrap:anywhere}
+.accControl select{max-width:100%}
+.tabs{scroll-snap-type:x proximity;scroll-padding-inline:14px}
+.tabs button{scroll-snap-align:center}
+
+/* Mid-size screens: core finance data becomes self-contained cards instead of clipped horizontal tables. */
+@media(max-width:900px){
+  .accTable,.pipelineTable{
+    border:0;
+    background:transparent;
+    overflow:visible;
+    box-shadow:none;
+    margin-inline:0!important;
+  }
+  .accRow.head,.pipeRow.head{display:none}
+  .accRow,
+  .accTable.mini .accRow,
+  .accTable.monthly .accRow,
+  .accTable.ledger .accRow,
+  .pipeRow{
+    min-width:0!important;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:0;
+    margin-bottom:10px;
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    overflow:hidden;
+    background:rgba(255,255,255,.018);
+    align-items:stretch;
+  }
+  .accRow>span,.pipeRow>span{
+    min-width:0;
+    padding:11px 12px;
+    border:0!important;
+    border-top:1px solid rgba(56,36,63,.72)!important;
+    font-size:12px;
+    line-height:1.45;
+    overflow-wrap:anywhere;
+  }
+  .accRow>span:nth-child(-n+2),.pipeRow>span:nth-child(-n+2){border-top:0!important}
+  .accRow>span::before,.pipeRow>span::before{
+    content:attr(data-label);
+    display:block;
+    margin-bottom:5px;
+    color:var(--muted);
+    font:600 8px/1.25 var(--mono);
+    text-transform:uppercase;
+    letter-spacing:.02em;
+  }
+  .accRow>span:last-child:nth-child(odd),.pipeRow>span:last-child:nth-child(odd),
+  .costsTable .accRow>span:last-child,.ledger .accRow>span:last-child{grid-column:1/-1}
+  .pipeRow{cursor:pointer}
+  .pipeRow b{font-size:14px}
+  .pipeRow small{font-size:10px;line-height:1.5}
+  .mutedRow{opacity:.68}
+}
+
+/* Phone calendar: agenda list is easier to scan than a 7-column canvas. */
+.mobileCalendar{display:none}
+@media(max-width:640px){
+  .viewGuide{grid-template-columns:1fr;gap:7px;margin-bottom:14px;padding:12px 13px}
+  .viewGuide p{font-size:13px}
+  .viewGuide small{white-space:normal}
+
+  .calendar{display:none!important}
+  .mobileCalendar{display:grid;gap:10px;margin-top:2px}
+  .mobileDay{
+    display:grid;
+    grid-template-columns:52px minmax(0,1fr);
+    gap:10px;
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    background:rgba(255,255,255,.018);
+  }
+  .mobileDayDate{
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding-top:5px;
+    font:650 22px/1 var(--font);
+    color:var(--paper);
+    font-variant-numeric:tabular-nums;
+  }
+  .mobileDayEvents{display:grid;gap:7px;min-width:0}
+  .mobileDayEvents .evt{margin:0;font-size:11px;line-height:1.45;padding:9px}
+
+  .sectionHead h2{max-width:100%;font-size:clamp(25px,8.5vw,31px);overflow-wrap:anywhere}
+  .note{font-size:13px;line-height:1.6}
+  .metric span,.metric small{font-size:8px}
+  .metric strong{line-height:1.08}
+  .accControl label{align-items:flex-start;flex-direction:column}
+  .accControl select{width:100%}
+  .pipeStats{grid-template-columns:1fr}
+}
+
+/* Very narrow phones: prioritize comprehension over density. */
+@media(max-width:520px){
+  .accRow,
+  .accTable.mini .accRow,
+  .accTable.monthly .accRow,
+  .accTable.ledger .accRow,
+  .pipeRow{grid-template-columns:1fr!important}
+  .accRow>span,.pipeRow>span{border-top:1px solid rgba(56,36,63,.72)!important}
+  .accRow>span:first-child,.pipeRow>span:first-child{border-top:0!important}
+  .accRow>span:nth-child(2),.pipeRow>span:nth-child(2){border-top:1px solid rgba(56,36,63,.72)!important}
+  .accRow>span:last-child,.pipeRow>span:last-child{grid-column:auto!important}
+  .pipeMini{grid-template-columns:1fr!important}
+  .pipeMini>div:last-child{grid-column:auto!important}
+}
+
+@media(max-width:390px){
+  .metrics{grid-template-columns:1fr!important}
+  .top{align-items:center}
+  .brand{font-size:17px}
+  .headerActions{justify-content:flex-end}
+  .primary.small,.ghost{padding-inline:8px;font-size:8px}
+  .hero h1{font-size:clamp(35px,12vw,46px)}
+  .mobileDay{grid-template-columns:44px minmax(0,1fr);padding:10px}
+  .mobileDayDate{font-size:20px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .tabs{scroll-behavior:auto}
+}
