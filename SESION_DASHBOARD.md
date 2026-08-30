@@ -8,185 +8,138 @@
 
 ## Contexto del Proyecto
 
-### ¿Qué es este proyecto?
 Dashboard financiero web que sincroniza datos del archivo Excel maestro (`RR_Finanzas_Maestro_FULL 2026.xlsx`) y los visualiza de forma interactiva en una página web desplegada en Vercel.
 
 ### Arquitectura
-```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Excel Maestro  │────▶│  API Serverless  │────▶│   Dashboard     │
-│  (.xlsx)        │     │  (Vercel)        │     │   (Next.js)     │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-```
+Excel Maestro (.xlsx) → API Serverless (Vercel) → Dashboard (Next.js)
 
 ### Stack Tecnológico
-- **Frontend:** Next.js 14 + React + TypeScript + Tailwind CSS
+- **Frontend:** Next.js + React + TypeScript + Tailwind CSS
 - **Gráficos:** Chart.js (react-chartjs-2)
 - **API:** Vercel Serverless Functions
-- **Procesamiento Excel:** librería xlsx (SheetJS)
+- **Procesamiento Excel:** xlsx (SheetJS)
 - **Hosting:** Vercel
 - **Datos:** Subida manual de Excel → API procesa → JSON en memoria
 
----
+## Estado Actual documentado al 15/08/2026
 
-## Estado Actual (15/08/2026)
+### Completado
+1. Proyecto Next.js con TypeScript y Tailwind.
+2. Parser de Excel para Dashboard, modelos de negocio, flujo de caja y hojas de servicios.
+3. API routes para upload y lectura de datos.
+4. Dashboard con KPIs, gráficos, proyectos, movimientos, pagos, calendario y filtros.
 
-### ✅ Completado
-1. Creación del proyecto Next.js con TypeScript y Tailwind
-2. Parser de Excel (`src/lib/excel-parser.ts`) que extrae:
-   - Dashboard (disponible, runway, semáforo, burn)
-   - Modelos de negocio (6 modelos)
-   - Flujo de caja por proyecto
-   - Hojas de servicios (10 hojas)
-3. API routes:
-   - `POST /api/upload` — Recibe archivo Excel y lo procesa
-   - `GET /api/data` — Retorna datos procesados
-4. Componente Dashboard con:
-   - 4 KPI cards (disponible, runway, semáforo, proyectos)
-   - Gráfico sparkline de saldo acumulado
-   - Gráfico dona de distribución por proyecto
-   - Gráfico barras ingresos vs egresos
-   - Tabla de modelos de negocio
-   - Tabla de últimos movimientos
-   - Filtros por proyecto
-   - Tema claro/oscuro
+### Pendiente originalmente
+- Persistencia (Vercel KV/PostgreSQL).
+- Auto-sync con Google Drive.
+- Más visualizaciones.
+- Autenticación opcional.
 
-### 🔄 En Progreso
-- Despliegue a Vercel
-- Pruebas end-to-end
+## Estructura principal
 
-### 📋 Pendiente
-- Conectar Vercel KV para persistencia de datos
-- Configurar webhook para auto-sync con Google Drive
-- Agregar más visualizaciones
-- Configurar autenticación (opcional)
-
----
-
-## Estructura del Proyecto
-
-```
+```text
 rr-finanzas/
 ├── src/
 │   ├── app/
-│   │   ├── api/
-│   │   │   ├── upload/route.ts    # API para subir Excel
-│   │   │   └── data/route.ts      # API para obtener datos
-│   │   ├── layout.tsx
-│   │   └── page.tsx               # Página principal
-│   ├── components/
-│   │   └── Dashboard.tsx          # Componente principal del dashboard
-│   └── lib/
-│       └── excel-parser.ts        # Parser de Excel a JSON
+│   ├── components/Dashboard.tsx
+│   └── lib/excel-parser.ts
 ├── public/
 ├── package.json
-└── SESION_DASHBOARD.md            # Este archivo
+└── SESION_DASHBOARD.md
 ```
 
----
+## Datos fuente
+- Excel principal: `G:\Mi unidad\RR_Aliados\04_Finanzas\RR_Finanzas_Maestro_FULL 2026.xlsx`
+- Dashboard HTML anterior: `G:\Mi unidad\RR_Aliados\04_Finanzas\RR_Finanzas_Dashboard.html`
+- Script original: `G:\Mi unidad\DashWeb\scripts\excel_to_json.py`
+- Contexto financiero: `G:\Mi unidad\RR_Aliados\04_Finanzas\_CONTEXTO.md`
 
-## Cómo Retomar la Sesión
-
-### 1. Verificar estado del proyecto
-```bash
-cd "G:\Mi unidad\DashWeb\rr-finanzas"
-npm run dev
-```
-
-### 2. Si necesitas instalar dependencias
-```bash
-npm install xlsx chart.js react-chartjs-2
-```
-
-### 3. Para desplegar a Vercel
-```bash
-npm i -g vercel
-vercel login
-vercel --prod
-```
-
-### 4. Para sincronizar datos del Excel local
-```bash
-python "G:\Mi unidad\DashWeb\scripts\excel_to_json.py"
-```
+### Métricas registradas al 15/08/2026
+- Disponible: $3.600.000 (Bancolombia)
+- Runway: 7.2 meses
+- Burn mensual: $500.000
+- Semáforo: CUIDADO
+- Proyectos registrados entonces: Wunder, BOGA, RR ALIADOS, ZAPATOS, AMSTERDAM #1-3 y GLOBOS.
 
 ---
 
-## Datos Fuente
+## ACTUALIZACIÓN 18/08/2026
 
-### Archivo Excel Principal
-- **Ruta:** `G:\Mi unidad\RR_Aliados\04_Finanzas\RR_Finanzas_Maestro_FULL 2026.xlsx`
-- **Hojas extraídas:** 28 (Dashboard, Caja, Modelos, Combos, Flujo_Caja, etc.)
+Se actualizó `src/components/Dashboard.tsx` con el estado operativo comunicado el 18/08/2026.
 
-### Métricas Clave (15/08/2026)
-- **Disponible:** $3.600.000 (Bancolombia)
-- **Runway:** 7.2 meses
-- **Burn mensual:** $500.000
-- **Semáforo:** 🟡 CUIDADO
-- **Proyectos activos:** 8 (Wunder, BOGA, RR ALIADOS, ZAPATOS, AMSTERDAM #1-3, GLOBOS)
+### Cambios de modelo
+- Se separa **cliente**, **prospecto** e **interno**.
+- Se añade **fase** y **próximo hito** por proyecto.
+- Se separan servicios en **alcance confirmado/base** y **oportunidad futura NO contratada**.
+- Los valores de prospectos no se tratan como caja comprometida.
+- Se agrega una pestaña **Servicios** con lectura explícita de confirmado vs oportunidad.
 
----
+### Proyectos incorporados/actualizados
+- BOGA: entrega 18/08 3:30 p. m.; credenciales, correcciones y dominio propio; saldo esperado máximo 20/08.
+- Wundeer: onboarding terminado; prueba desde 15/08; primera grabación 22/08; alcance 360°.
+- Zapatos: onboarding previsto 30/08.
+- Sátiro Sushi: desarrollo; entrega 01/09; plataforma gastronómica + CRM + NFC; 30 cuotas de $400K.
+- Candilejas: prototipo 22/08; multisede; referencia comercial $20M para más de 3 sedes.
+- La Banca: prototipo 22/08; modelo gastronómico.
+- Mar y Tierra: prototipo/pitch 01/09.
+- Plazoleta Jardín: pitch 01/09; superadmin + administradores por restaurante + roles operativos.
+- Charly Brawn Billar Club: prototipo 01/09; web + NFC físico.
+- Amsterdam #1-3: prototipos listos; fechas Aruba por definir.
+- Globos: **levantar requerimientos hoy en la misma reunión de BOGA con la dueña**; definir alcance, prototipo y fechas.
+- Junisama: requerimientos por definir.
 
-## Decisiones Técnicas
+### Criterio financiero actualizado
+- Saldo base conservado: $3.600.000 al corte 15/08.
+- BOGA: se modela saldo final pendiente de $600K con fecha límite 20/08, sujeto a confirmación de pago real.
+- Wundeer: durante la prueba no se agrega ingreso futuro como cobro seguro; se conservan costos operativos del modelo existente para planificación.
+- Sátiro: se proyectan 30 cuotas de $400K; confirmar fecha contractual de primera cuota.
+- Prospectos (Candilejas, La Banca, Mar y Tierra, Plazoleta, Charly Brawn, Amsterdam, Globos, Junisama): **no generan ingreso comprometido hasta cierre**.
 
-### ¿Por qué Next.js?
-- Serverless functions nativas en Vercel
-- SSR/SSG para performance
-- Ecosistema maduro y documentación
-
-### ¿Por qué Chart.js?
-- Ligero (~60KB)
-- Buen rendimiento con muchos datos
-- Fácil de customizar
-
-### ¿Por qué no base de datos externa?
-- Para MVP, los datos se procesan en cada upload
-- En futuro: Vercel KV o PostgreSQL para persistencia
-
----
-
-## Próximos Pasos
-
-1. **Corto plazo (esta semana)**
-   - Desplegar a Vercel
-   - Probar upload del Excel real
-   - Verificar todos los gráficos
-
-2. **Medio plazo (próxima semana)**
-   - Conectar Vercel KV para persistencia
-   - Agregar auto-sync con Google Drive API
-   - Mejorar diseño responsive
-
-3. **Largo plazo**
-   - Autenticación de usuarios
-   - Múltiples archivos Excel
-   - Exportar reportes PDF
-   - Alertas automáticas (runway < 4 meses)
+### Próximo paso técnico
+Validar build, desplegar el proyecto `rr-finanzas` en Vercel y después conectar una fuente persistente para que las actualizaciones no dependan del estado local del navegador.
 
 ---
 
-## Notas de la Sesión
+## Sesión 30/08/2026 — actualización multiagente
 
-### Problemas Encontrados
-1. El archivo Excel tiene fórmulas con errores (#REF!) en algunas celdas
-   - Solución: El parser maneja errores y retorna null
-2. npm install tarda mucho en Windows
-   - Solución: Usar timeout más largos
+> Estado operativo del corte 29/08/2026 ya incorporado (caja 1.630.000, pagos 990.000 al 31/08, caja tras 640.000). Esta sesión conecta el dashboard con Supabase de forma más profunda.
 
-### Aprendizajes
-- El Excel tiene 28 hojas con datos estructurados
-- El flujo de caja está organizado por proyecto y fecha
-- Los modelos de negocio están definidos pero sin ingresos aún
+### Cambios de esta sesión
+
+1. **Nuevas rutas API (gap principal de la auditoría):**
+   - `src/app/api/db/cash-movements/route.ts` — `GET /api/db/cash-movements`: expone la tabla `cash_movements` (select `*`, `order by fecha desc`, `limit 100`). Mismo patrón de respuesta que `/api/db/projects`: `{ ok, cashMovements|error, source }`.
+   - `src/app/api/db/project-services/route.ts` — `GET /api/db/project-services`: expone `project_services` con join implícito a `projects` para traer `nombre` del proyecto (`select *, projects(nombre)`, `order by created_at desc`, `limit 200`).
+   - Tipos nuevos en `src/lib/db/types.ts`: `CashMovementRecord` y `ProjectServiceRecord`.
+
+2. **Overlay de flujo de caja real desde Supabase (`Dashboard.tsx`):**
+   - Fetch de `/api/db/cash-movements` junto al fetch del snapshot financiero.
+   - Si hay movimientos frescos (`fecha`/`synced_at` ≥ corte 29/08), la pestaña **Movimientos** muestra el overlay Supabase (columnas Fecha, Tipo, Concepto, Proyecto, Monto, Fuente) con badge de fuente; si no hay datos, sigue el ledger local intacto.
+   - Nueva tarjeta **"Flujo de caja (Supabase)"** en el tab Resumen: últimos 10 movimientos con fecha, concepto, monto y proyecto, solo cuando hay datos Supabase.
+
+3. **Más información en el tab Resumen:**
+   - Tarjeta **"Pagos del 31 de agosto 2026"** mejorada: desglose Candilejas personal (690.000) + nómina quincena (300.000) = 990.000, proyección de la semana urgente 31/08–05/09 (comprometidos + supuestos edición/transporte 750.000–1.305.000) y caja tras pagar (640.000).
+   - Nueva sección **"Cobros pendientes por recibir"**: BOGA, Sátiro y Wuundeer en monto 0, etiquetados explícitamente "no recibidos al corte" (certeza histórico).
+
+4. **Datos del snapshot en el header:** cuando hay snapshot Supabase fresco se muestra el badge Supabase + fecha de sync y `source_hash` (primeros 8 caracteres).
+
+5. **Certeza en pagos:** filtro por nivel de certeza (todos/confirmado/confiable/comprometido/supuesto/prospecto/histórico), badge de certeza en cada tarjeta y selector de certeza en el modal de edición/creación de pagos.
+
+### Estado actual (SSOT operativo)
+- Corte: **30/08/2026 (HOY)** → ventana urgente 31/08–05/09. Corte 29/08 pasa a histórico.
+- Caja disponible: **1.630.000** COP (Bancolombia) — sin cambios respecto al 29/08 (confirmado 30/08).
+- Burn mensual: 500.000 → runway 3.3 meses.
+- Pagos comprometidos al 31/08: **990.000** — **NO ejecutados aún** (confirmado 30/08: quedan PENDIENTES). Candilejas personal 690.000 + quincena Manuel 200.000 / Samuel 100.000.
+- Caja tras pagar todo lo comprometido: **640.000**.
+- Supuestos NO comprometidos: edición Candilejas 750.000–1.125.000 y transporte 0–180.000.
+- Cobros pendientes **no recibidos** al corte (confirmado 30/08): BOGA, Sátiro Sushi, Wuundeer (monto $0, certeza histórico).
+- Fuente de verdad operativa: `Dashboard.tsx` (ledger local-first) + seed `RR/ChatBot/bot_telegram/db/seed/finance_corte_2026-08-30.json` (vigente; 29/08 y 31/08 como histórico/proyección).
+
+### Pendientes
+- **Auth** en las rutas `/api/db/*` (hoy exponen datos con service key si hay env configurado).
+- **Auto-sync con Google Drive** (hoy el único camino de escritura es el upload manual de Excel → `/api/db/excel`).
+- Verificar en la consola de Vercel que `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` están definidos para que `cash_movements`/`project_services`/`financial` devuelvan datos reales.
+- Validar esquema real de `cash_movements` y `project_services` (columnas `created_at`, `fecha`, `tipo`) contra el ordenamiento usado en las rutas.
 
 ---
 
-## Contactos y Recursos
-
-- **Excel maestro:** `G:\Mi unidad\RR_Aliados\04_Finanzas\RR_Finanzas_Maestro_FULL 2026.xlsx`
-- **Dashboard actual (HTML estático):** `G:\Mi unidad\RR_Aliados\04_Finanzas\RR_Finanzas_Dashboard.html`
-- **Script Python original:** `G:\Mi unidad\DashWeb\scripts\excel_to_json.py`
-- **Documentación financiera:** `G:\Mi unidad\RR_Aliados\04_Finanzas\_CONTEXTO.md`
-
----
-
-*Última actualización: 15/08/2026 14:30*
+*Actualización añadida: 30/08/2026.*
