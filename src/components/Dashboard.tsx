@@ -450,6 +450,7 @@ export default function Dashboard() {
             <Link href="/crm" className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#f5ede1] transition-colors">CRM</Link>
             <Link href="/cuentas-cobro" className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#ce3d1f]/15 text-[#e7785e] hover:bg-[#ce3d1f]/25 transition-colors">Cuentas</Link>
             <Link href="/documentos" className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#f5ede1] transition-colors">Documentos</Link>
+            <Link href="/contabilidad" className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#e8c069]/10 text-[#e8c069] hover:bg-[#e8c069]/20 transition-colors">Contabilidad</Link>
             <label className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#3f0035]/40 text-[#e8c069] cursor-pointer hover:bg-[#3f0035]/60 border border-[#3f0035]/40 transition-colors">
               Sync Excel
               <input type="file" accept=".xlsx,.xls" className="hidden" onChange={async (e) => {
