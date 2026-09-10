@@ -24,17 +24,17 @@ type MovFila =
 
 // Helper: crear fecha sin problemas de timezone
 const fecha = (y: number, m: number, d: number) => `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-const CORTE_ACTUAL = fecha(2026,8,30);
+const CORTE_ACTUAL = fecha(2026,8,31);
 const CAJA_REAL_ACTUAL = 1630000;
 const URGENTE_INICIO = fecha(2026,8,31);
 const URGENTE_FIN = fecha(2026,9,5);
 
 const PROYECTOS: Proyecto[] = [
-  { id: 'wundeer', nombre: 'Wuundeer', cliente: 'Wuundeer', categoria: 'cliente', estado: 'activo', valor_total: 9000000, valor_pagado: 0, fecha_inicio: fecha(2026,8,15), fecha_fin: fecha(2026,10,15), fase: 'Prueba activa', proximo_hito: 'No contar cobros como recibidos en el corte 30/08. Cualquier entrada futura requiere fecha, monto y certeza actualizados.', descripcion: 'Proyecto registrado en el tablero historico. El usuario confirmo el 30/08 que no ha entrado ningun pago desde el ultimo corte.', servicios: ['Branding','Desarrollo web','Redes sociales','Producción audiovisual','Pauta','SEO','CRM'], servicios_potenciales: [], fuente: 'Actualizacion usuario 30/08/2026 supersede saldos/cobros del 18/08', equipo: ['Branding','Camarógrafo','Supervisor','Modelaje','Edición','Diseño','Gestión de redes','Desarrollo web','CRM','Pauta','SEO','Logística'], costo_reservado: undefined },
-  { id: 'boga', nombre: 'BOGA', cliente: 'BOGA', categoria: 'cliente', estado: 'activo', valor_total: 1200000, valor_pagado: 0, fecha_inicio: fecha(2026,7,23), fecha_fin: fecha(2026,8,20), fase: 'Pago no recibido', proximo_hito: 'No contar como caja recibida. Actualizar solo cuando exista comprobante o confirmacion directa de pago.', descripcion: 'El usuario confirmo el 30/08 que no ha entrado ningun pago de BOGA desde el ultimo corte.', servicios: ['Desarrollo web'], servicios_potenciales: ['Mantenimiento','Redes sociales','Pauta','SEO'], fuente: 'Actualizacion usuario 30/08/2026 supersede expectativa de cobro 18/08', equipo: ['Desarrollo web','Dirección / entrega'], costo_reservado: 0 },
+  { id: 'wundeer', nombre: 'Wuundeer', cliente: 'Wuundeer', categoria: 'cliente', estado: 'activo', valor_total: 9000000, valor_pagado: 0, fecha_inicio: fecha(2026,8,15), fecha_fin: fecha(2026,10,15), fase: 'Prueba activa', proximo_hito: 'No contar cobros como recibidos en el corte 31/08. Cualquier entrada futura requiere fecha, monto y certeza actualizados.', descripcion: 'Proyecto registrado en el tablero historico. El usuario confirmo el 31/08 que no ha entrado ningun pago desde el ultimo corte.', servicios: ['Branding','Desarrollo web','Redes sociales','Producción audiovisual','Pauta','SEO','CRM'], servicios_potenciales: [], fuente: 'Actualizacion usuario 31/08/2026 supersede saldos/cobros del 18/08', equipo: ['Branding','Camarógrafo','Supervisor','Modelaje','Edición','Diseño','Gestión de redes','Desarrollo web','CRM','Pauta','SEO','Logística'], costo_reservado: undefined },
+  { id: 'boga', nombre: 'BOGA', cliente: 'BOGA', categoria: 'cliente', estado: 'activo', valor_total: 1200000, valor_pagado: 0, fecha_inicio: fecha(2026,7,23), fecha_fin: fecha(2026,8,20), fase: 'Pago no recibido', proximo_hito: 'No contar como caja recibida. Actualizar solo cuando exista comprobante o confirmacion directa de pago.', descripcion: 'El usuario confirmo el 31/08 que no ha entrado ningun pago de BOGA desde el ultimo corte.', servicios: ['Desarrollo web'], servicios_potenciales: ['Mantenimiento','Redes sociales','Pauta','SEO'], fuente: 'Actualizacion usuario 31/08/2026 supersede expectativa de cobro 18/08', equipo: ['Desarrollo web','Dirección / entrega'], costo_reservado: 0 },
   { id: 'zapatos', nombre: 'Zapatos', cliente: 'Zapatos', categoria: 'cliente', estado: 'planificacion', valor_total: 0, valor_pagado: 0, fecha_inicio: fecha(2026,8,30), fecha_fin: fecha(2026,12,31), fase: 'Onboarding programado', proximo_hito: 'Onboarding: 30 ago.–15 sep. Primer pago previsto: 30 sep. (monto por confirmar).', descripcion: 'Cuenta relacionada con el mismo propietario/contacto de Wundeer. El primer cobro está calendarizado para el 30 de septiembre, pero aún no se proyecta monto para no inflar caja.', servicios: [], servicios_potenciales: ['Branding','Desarrollo web','Redes sociales','Producción audiovisual','Pauta','SEO','CRM'], fuente: 'Actualización operativa 18/08' },
-  { id: 'satiro', nombre: 'Sátiro Sushi', cliente: 'Sátiro Sushi', categoria: 'cliente', estado: 'activo', valor_total: 12000000, valor_pagado: 0, fecha_inicio: fecha(2026,8,1), fecha_fin: fecha(2027,11,30), fase: 'Pago no recibido', proximo_hito: 'No contar cuotas como caja hasta confirmacion de pago recibido o cobro confiable con fecha.', descripcion: 'Ecosistema gastronomico RR. El usuario confirmo el 30/08 que no ha entrado ningun pago de Satiro Sushi desde el ultimo corte.', servicios: ['Plataforma gastronómica','CRM administrativo','NFC','Pasarela de pago','Mesero/Cocina/Admin'], servicios_potenciales: ['Redes sociales','Producción audiovisual','Pauta','SEO'], fuente: 'Actualizacion usuario 30/08/2026 supersede proyeccion automatica de cuotas', equipo: ['Desarrollo full-stack','Implementación CRM','NFC / impresión 3D','QA / entrega'], costo_reservado: undefined },
-  { id: 'candilejas', nombre: 'Candilejas', cliente: 'Restaurante Candilejas', categoria: 'cliente', estado: 'activo', valor_total: 0, valor_pagado: 0, valor_potencial: 20000000, fecha_inicio: fecha(2026,8,26), fecha_fin: fecha(2026,9,5), fase: 'Produccion / pagos urgentes', proximo_hito: 'Cerrar pagos de personal el 31 ago con plazo maximo al 5 sep. Edicion y transporte siguen como supuestos editables.', descripcion: 'Tres sesiones de produccion. Personal confirmado total: COP 690.000. Edicion y transporte no estan confirmados como obligacion final y se modelan aparte como rango editable.', servicios: ['Producción audiovisual'], servicios_potenciales: ['Plataforma gastronómica','CRM administrativo','NFC','Pasarela de pago','Arquitectura multisede'], fuente: 'Actualizacion usuario 30/08/2026' },
+  { id: 'satiro', nombre: 'Sátiro Sushi', cliente: 'Sátiro Sushi', categoria: 'cliente', estado: 'activo', valor_total: 12000000, valor_pagado: 0, fecha_inicio: fecha(2026,8,1), fecha_fin: fecha(2027,11,30), fase: 'Pago no recibido', proximo_hito: 'No contar cuotas como caja hasta confirmacion de pago recibido o cobro confiable con fecha.', descripcion: 'Ecosistema gastronomico RR. El usuario confirmo el 31/08 que no ha entrado ningun pago de Satiro Sushi desde el ultimo corte.', servicios: ['Plataforma gastronómica','CRM administrativo','NFC','Pasarela de pago','Mesero/Cocina/Admin'], servicios_potenciales: ['Redes sociales','Producción audiovisual','Pauta','SEO'], fuente: 'Actualizacion usuario 31/08/2026 supersede proyeccion automatica de cuotas', equipo: ['Desarrollo full-stack','Implementación CRM','NFC / impresión 3D','QA / entrega'], costo_reservado: undefined },
+  { id: 'candilejas', nombre: 'Candilejas', cliente: 'Restaurante Candilejas', categoria: 'cliente', estado: 'activo', valor_total: 0, valor_pagado: 0, valor_potencial: 20000000, fecha_inicio: fecha(2026,8,26), fecha_fin: fecha(2026,9,5), fase: 'Produccion / pagos urgentes', proximo_hito: 'Cerrar pagos de personal el 31 ago con plazo maximo al 5 sep. Edicion y transporte siguen como supuestos editables.', descripcion: 'Tres sesiones de produccion. Personal confirmado total: COP 690.000. Edicion y transporte no estan confirmados como obligacion final y se modelan aparte como rango editable.', servicios: ['Producción audiovisual'], servicios_potenciales: ['Plataforma gastronómica','CRM administrativo','NFC','Pasarela de pago','Arquitectura multisede'], fuente: 'Actualizacion usuario 31/08/2026' },
   { id: 'labanca', nombre: 'La Banca', cliente: 'La Banca', categoria: 'prospecto', estado: 'planificacion', valor_total: 0, valor_pagado: 0, valor_potencial: 12000000, fecha_inicio: fecha(2026,8,18), fecha_fin: fecha(2026,8,22), fase: 'Prototipo / pitch', proximo_hito: 'Entregar prototipo funcional el 22 ago.', descripcion: 'Prospecto gastronómico. Modelo comercial base: $12M financiado o $10M acelerado.', servicios: ['Plataforma gastronómica','CRM administrativo','NFC','Pasarela de pago'], servicios_potenciales: ['Redes sociales','Producción audiovisual','Pauta','SEO'], fuente: 'Actualización operativa 18/08' },
   { id: 'marytierra', nombre: 'Mar y Tierra', cliente: 'Mar y Tierra Zipaquirá', categoria: 'prospecto', estado: 'planificacion', valor_total: 0, valor_pagado: 0, valor_potencial: 12000000, fecha_inicio: fecha(2026,8,18), fecha_fin: fecha(2026,9,1), fase: 'Prototipo / pitch', proximo_hito: 'Presentar prototipo el 1 sep.', descripcion: 'Prospecto gastronómico para el mismo ecosistema de Sátiro.', servicios: ['Plataforma gastronómica','CRM administrativo','NFC','Pasarela de pago'], servicios_potenciales: ['Redes sociales','Producción audiovisual','Pauta','SEO'], fuente: 'Actualización operativa 18/08' },
   { id: 'plazoleta', nombre: 'Plazoleta Jardín', cliente: 'Plazoleta Jardín Chía', categoria: 'prospecto', estado: 'planificacion', valor_total: 0, valor_pagado: 0, valor_potencial: 72000000, fecha_inicio: fecha(2026,8,18), fecha_fin: fecha(2026,9,1), fase: 'Prototipo / negociación', proximo_hito: 'Desarrollar prototipo + pitch para el 1 sep.', descripcion: 'Arquitectura multi-restaurante: superadmin global, administradores por restaurante y roles mesero/cocina. Incentivos por volumen.', servicios: ['Plataforma multi-restaurante','CRM multirol','NFC','Pasarela de pago','Superadmin'], servicios_potenciales: ['Redes sociales','Producción audiovisual','Pauta','SEO'], fuente: 'Actualización operativa 18/08' },
@@ -48,7 +48,7 @@ const PROYECTOS: Proyecto[] = [
 ];
 
 const MOVIMIENTOS: Movimiento[] = [
-  { id: 'mov001', tipo: 'ingreso', concepto: 'Caja real actual - Bancolombia - corte 30/08', monto: CAJA_REAL_ACTUAL, fecha: CORTE_ACTUAL, categoria: 'saldo confirmado', proyecto_id: '' },
+  { id: 'mov001', tipo: 'ingreso', concepto: 'Caja real actual - Bancolombia - corte 31/08', monto: CAJA_REAL_ACTUAL, fecha: CORTE_ACTUAL, categoria: 'saldo confirmado', proyecto_id: '' },
 ];
 
 // Generador de pagos con fechas correctas
@@ -60,14 +60,14 @@ const genPagos = (): Pago[] => {
   };
 
   // Comprometidos a pagar el 31 ago (plazo máximo personal Candilejas: 5 sep)
-  add('Candilejas S1 - modelo', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 30/08: pagar 31 ago (máx 5 sep). Sesión 1 modelo COP 60.000' });
-  add('Candilejas S1 - supervisora', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 30/08: sesión 1 supervisora COP 60.000' });
-  add('Candilejas S1 - camarógrafo', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'produccion', certeza: 'comprometido', fuente_notas: 'Confirmado 30/08: sesión 1 camarógrafo COP 60.000' });
-  add('Candilejas S2 - 2 camarógrafos', 120000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'produccion', certeza: 'comprometido', fuente_notas: 'Confirmado 30/08: sesión 2, dos camarógrafos COP 60.000 c/u' });
-  add('Candilejas S2 - 2 modelos', 120000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 30/08: sesión 2, dos modelos COP 60.000 c/u' });
-  add('Candilejas S3 - modelo principal', 150000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 30/08: sesión 3 modelo COP 150.000' });
-  add('Candilejas S3 - camarógrafo', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'produccion', certeza: 'comprometido', fuente_notas: 'Confirmado 30/08: sesión 3 camarógrafo COP 60.000' });
-  add('Candilejas S3 - supervisora', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 30/08: sesión 3 supervisora COP 60.000' });
+  add('Candilejas S1 - modelo', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 31/08: pagar 31 ago (máx 5 sep). Sesión 1 modelo COP 60.000' });
+  add('Candilejas S1 - supervisora', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 31/08: sesión 1 supervisora COP 60.000' });
+  add('Candilejas S1 - camarógrafo', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'produccion', certeza: 'comprometido', fuente_notas: 'Confirmado 31/08: sesión 1 camarógrafo COP 60.000' });
+  add('Candilejas S2 - 2 camarógrafos', 120000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'produccion', certeza: 'comprometido', fuente_notas: 'Confirmado 31/08: sesión 2, dos camarógrafos COP 60.000 c/u' });
+  add('Candilejas S2 - 2 modelos', 120000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 31/08: sesión 2, dos modelos COP 60.000 c/u' });
+  add('Candilejas S3 - modelo principal', 150000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 31/08: sesión 3 modelo COP 150.000' });
+  add('Candilejas S3 - camarógrafo', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'produccion', certeza: 'comprometido', fuente_notas: 'Confirmado 31/08: sesión 3 camarógrafo COP 60.000' });
+  add('Candilejas S3 - supervisora', 60000, URGENTE_INICIO, 'egreso', 'candilejas', 'pendiente', { categoria: 'talento', certeza: 'comprometido', fuente_notas: 'Confirmado 31/08: sesión 3 supervisora COP 60.000' });
 
   add('Juan Manuel Mesa (quincena)', 200000, URGENTE_INICIO, 'egreso', 'rraliados', 'pendiente', { categoria: 'nomina', certeza: 'comprometido', fuente_notas: 'Obligaciones Excel/CxP: fijo 15 y 30. Incluido en corte 31/08 si quincena aún pendiente.' });
   add('Samuel Zuluaga (quincena)', 100000, URGENTE_INICIO, 'egreso', 'rraliados', 'pendiente', { categoria: 'nomina', certeza: 'comprometido', fuente_notas: 'Obligaciones Excel/CxP: fijo 15 y 30. Incluido en corte 31/08 si quincena aún pendiente.' });
@@ -75,17 +75,17 @@ const genPagos = (): Pago[] => {
   add('Candilejas - edición si aplica a 3 sesiones', 1125000, URGENTE_FIN, 'egreso', 'candilejas', 'programado', { categoria: 'desarrollo', certeza: 'supuesto', monto_min: 750000, monto_max: 1125000, fuente_notas: 'Supuesto editable: COP 25.000/min, 10-15 min por sesión — NO sumar al total comprometido del 31' });
   add('Candilejas - transporte si aplica a 3 sesiones', 180000, URGENTE_FIN, 'egreso', 'candilejas', 'programado', { categoria: 'transporte', certeza: 'supuesto', monto_min: 0, monto_max: 180000, fuente_notas: 'Supuesto editable — NO sumar al total comprometido del 31' });
 
-  add('BOGA - cobro pendiente no recibido', 0, URGENTE_FIN, 'ingreso', 'boga', 'programado', { categoria: 'cobro cliente', certeza: 'historico', fuente_notas: 'No contar como caja: usuario confirmó 30/08 sin pago recibido.' });
-  add('Sátiro Sushi - cuota pendiente no recibida', 0, URGENTE_FIN, 'ingreso', 'satiro', 'programado', { categoria: 'cobro cliente', certeza: 'historico', fuente_notas: 'No contar como caja: usuario confirmó 30/08 sin pago recibido.' });
-  add('Wuundeer - cobro pendiente no recibido', 0, URGENTE_FIN, 'ingreso', 'wundeer', 'programado', { categoria: 'cobro cliente', certeza: 'historico', fuente_notas: 'No contar como caja: usuario confirmó 30/08 sin pago recibido.' });
+  add('BOGA - cobro pendiente no recibido', 0, URGENTE_FIN, 'ingreso', 'boga', 'programado', { categoria: 'cobro cliente', certeza: 'historico', fuente_notas: 'No contar como caja: usuario confirmó 31/08 sin pago recibido.' });
+  add('Sátiro Sushi - cuota pendiente no recibida', 0, URGENTE_FIN, 'ingreso', 'satiro', 'programado', { categoria: 'cobro cliente', certeza: 'historico', fuente_notas: 'No contar como caja: usuario confirmó 31/08 sin pago recibido.' });
+  add('Wuundeer - cobro pendiente no recibido', 0, URGENTE_FIN, 'ingreso', 'wundeer', 'programado', { categoria: 'cobro cliente', certeza: 'historico', fuente_notas: 'No contar como caja: usuario confirmó 31/08 sin pago recibido.' });
 
   return pagos;
 };
 
 const PAGOS = genPagos();
 
-// Storage — bump key para forzar corte 30/08 (evita localStorage viejo)
-const STORAGE_KEY = 'rr-v11-pagos-30-2026-08-30';
+// Storage — bump key para forzar corte 31/08 (evita localStorage viejo)
+const STORAGE_KEY = 'rr-v12-pagos-31-2026-08-31';
 interface AppState { proyectos: Proyecto[]; movimientos: Movimiento[]; pagos: Pago[]; }
 const loadState = (): AppState => {
   if (typeof window === 'undefined') return { proyectos: PROYECTOS, movimientos: MOVIMIENTOS, pagos: PAGOS };
@@ -132,7 +132,7 @@ export default function Dashboard() {
   // Overlay de flujo de caja real desde Supabase (tabla cash_movements)
   const [dbMovs, setDbMovs] = useState<CashMovementRecord[]>([]);
   const [dbMovSource, setDbMovSource] = useState<'local' | 'supabase'>('local');
-  const [tab, setTab] = useState<'resumen'|'proyectos'|'servicios'|'movimientos'|'pagos'|'calendario'|'brechas'>('resumen');
+  const [tab, setTab] = useState<'resumen'|'gastos'|'proyectos'|'servicios'|'movimientos'|'pagos'|'calendario'|'brechas'>('resumen');
   const [modal, setModal] = useState<string|null>(null);
   const [editId, setEditId] = useState<string|null>(null);
   const [dark, setDark] = useState(true);
@@ -256,6 +256,67 @@ export default function Dashboard() {
   // Cobros pendientes por recibir (monto 0 = NO recibidos al corte)
   const cobrosPendientes = state.pagos.filter(p => p.tipo === 'ingreso' && p.monto === 0 && p.estado !== 'pagado');
 
+  // ── GASTOS MENSUALES ─────────────────────────────────────────────
+  // 1) Gastos fijos recurrentes (se pagan cada mes, día 15 y 30)
+  const GASTOS_FIJOS_MENSUALES = [
+    { concepto: 'Quincena Manuel (15 y 30)', monto: 200000, frecuencia: '2/mes' },
+    { concepto: 'Quincena Samuel (15 y 30)', monto: 100000, frecuencia: '2/mes' },
+    { concepto: 'Suscripciones IA (DeepSeek + OpenCode)', monto: 70000, frecuencia: '1/mes' },
+    { concepto: 'Hosting / infraestructura', monto: 50000, frecuencia: '1/mes' },
+    { concepto: 'Otros servicios operativos', monto: 80000, frecuencia: '1/mes' },
+  ];
+  const totalFijosMes = GASTOS_FIJOS_MENSUALES.reduce((s, g) => s + g.monto * (g.frecuencia === '2/mes' ? 2 : 1), 0);
+
+  // 2) Gastos ya estipulados / comprometidos (egresos con certeza confirmado o comprometido, no pagados)
+  const gastosEstipulados = state.pagos.filter(p =>
+    p.tipo === 'egreso' && p.estado !== 'pagado' &&
+    (p.certeza === 'confirmado' || p.certeza === 'comprometido')
+  ).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const totalEstipulado = gastosEstipulados.reduce((s, p) => s + p.monto, 0);
+
+  // 3) Gastos nuevos (supuestos / prospectos / sin certeza fuerte — por decidir o recientes)
+  const gastosNuevos = state.pagos.filter(p =>
+    p.tipo === 'egreso' && p.estado !== 'pagado' &&
+    (p.certeza === 'supuesto' || p.certeza === 'prospecto' || !p.certeza)
+  ).sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const totalNuevoMin = gastosNuevos.reduce((s, p) => s + (p.monto_min ?? p.monto), 0);
+  const totalNuevoMax = gastosNuevos.reduce((s, p) => s + (p.monto_max ?? p.monto), 0);
+
+  // 4) Gastos ya pagados este corte (históricos, para contexto)
+  const gastosPagados = state.pagos.filter(p => p.tipo === 'egreso' && p.estado === 'pagado');
+  const totalPagado = gastosPagados.reduce((s, p) => s + p.monto, 0);
+
+  // ── PAGOS POR PERSONA (mapeo confirmado por el dueño 31/08/2026) ─────
+  // Cada persona con sus conceptos y montos. Permite generar cuentas de cobro.
+  const PAGOS_POR_PERSONA: { persona: string; concepto: string; monto: number; proyecto: string }[] = [
+    { persona: 'Handle', concepto: 'Desarrollo', monto: 200000, proyecto: 'Candilejas' },
+    { persona: 'Sam', concepto: 'Desarrollo', monto: 450000, proyecto: 'Candilejas' },
+    { persona: 'Martín', concepto: 'Desarrollo', monto: 300000, proyecto: 'Candilejas' },
+    { persona: 'Manuel', concepto: 'Base pendiente de contrato', monto: 300000, proyecto: 'RR Aliados' },
+    { persona: 'Paulina', concepto: 'Modelo, sesión 1', monto: 60000, proyecto: 'Candilejas' },
+    { persona: 'Samuel García', concepto: 'Camarógrafo, sesiones 1 y 2', monto: 120000, proyecto: 'Candilejas' },
+    { persona: 'Estefanía', concepto: 'Supervisora, sesiones 1 y 3', monto: 120000, proyecto: 'Candilejas' },
+    { persona: 'Sebastián Vargas', concepto: 'Camarógrafo, sesiones 2 y 3', monto: 120000, proyecto: 'Candilejas' },
+    { persona: 'Santiago Tansi Beats', concepto: 'Modelo, sesión 2', monto: 60000, proyecto: 'Candilejas' },
+    { persona: 'Sofía Vega', concepto: 'Modelo, sesión 2', monto: 60000, proyecto: 'Candilejas' },
+    { persona: 'Laura', concepto: 'Modelo, sesión 3', monto: 150000, proyecto: 'Candilejas' },
+  ];
+  // Agrupar por persona (total por colaborador)
+  const personasMap = new Map<string, { persona: string; items: { concepto: string; monto: number; proyecto: string }[]; total: number }>();
+  PAGOS_POR_PERSONA.forEach(p => {
+    const cur = personasMap.get(p.persona) || { persona: p.persona, items: [], total: 0 };
+    cur.items.push({ concepto: p.concepto, monto: p.monto, proyecto: p.proyecto });
+    cur.total += p.monto;
+    personasMap.set(p.persona, cur);
+  });
+  const personasPagos = Array.from(personasMap.values()).sort((a, b) => b.total - a.total);
+  const totalPersonas = personasPagos.reduce((s, p) => s + p.total, 0);
+
+  // Persona seleccionada para generar cuenta de cobro
+  const [personaSel, setPersonaSel] = useState<string | null>(null);
+  const [ccStatus, setCcStatus] = useState('');
+  const personaActual = personasPagos.find(p => p.persona === personaSel) || null;
+
   // Tabla de movimientos: overlay Supabase si hay datos frescos, si no ledger local
   const movsTabla: MovFila[] = dbMovSource === 'supabase'
     ? dbMovs.map(m => ({
@@ -333,44 +394,63 @@ export default function Dashboard() {
     XLSX.writeFile(wb, `RR_Finanzas_${hoyStr}.xlsx`);
   };
 
-  if (!loaded) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center"><div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div></div>;
+  // Generar cuenta de cobro: navega a /cuentas-cobro con la persona y conceptos pre-cargados
+  const generarCuentaCobro = async (p: { persona: string; items: { concepto: string; monto: number; proyecto: string }[]; total: number }) => {
+    setCcStatus(`Preparando cuenta para ${p.persona}...`);
+    // Construir query con persona + conceptos (JSON) para que la página pre-cargue todo
+    const conceptos = p.items.map(i => ({ concepto: i.concepto, precio: i.monto, cantidad: 1 }));
+    const qs = new URLSearchParams();
+    qs.set('persona', p.persona);
+    qs.set('conceptos', JSON.stringify(conceptos));
+    qs.set('proyecto', Array.from(new Set(p.items.map(i => i.proyecto))).join(', '));
+    // Dar un instante para mostrar el estado antes de navegar
+    setTimeout(() => {
+      window.location.href = `/cuentas-cobro?${qs.toString()}`;
+    }, 300);
+  };
 
-  const bg = dark?'bg-[#0a0a0f]':'bg-gray-50';
-  const card = dark?'bg-[#12121a]':'bg-white';
+  if (!loaded) return <div className="min-h-screen bg-[#08080c] flex items-center justify-center"><div className="w-12 h-12 border-4 border-[#ce3d1f] border-t-transparent rounded-full animate-spin"></div></div>;
+
+  const bg = dark?'bg-[#08080c]':'bg-gray-50';
+  const card = dark?'bg-[#0f0f15]':'bg-white';
   const bd = dark?'border-white/[0.06]':'border-gray-200';
-  const t = dark?'text-white':'text-gray-900';
-  const t2 = dark?'text-gray-400':'text-gray-500';
-  const t3 = dark?'text-gray-600':'text-gray-400';
-  const inp = dark?'bg-white/5 border-white/10 text-white':'bg-gray-50 border-gray-200 text-gray-900';
+  const t = dark?'text-[#f5ede1]':'text-gray-900';
+  const t2 = dark?'text-[#8a8778]':'text-gray-500';
+  const t3 = dark?'text-[#6b6859]':'text-gray-400';
+  const inp = dark?'bg-white/5 border-white/10 text-[#f5ede1]':'bg-gray-50 border-gray-200 text-gray-900';
 
   const Input = ({l,v,on,tp='text'}:{l:string;v:string|number;on:(v:string)=>void;tp?:string}) => (
-    <div><label className={`text-xs font-medium ${t2} mb-1.5 block`}>{l}</label><input type={tp} value={v||''} onChange={e=>on(e.target.value)} className={`w-full px-3 py-2.5 rounded-lg text-sm ${inp} border focus:border-red-500 focus:ring-1 focus:ring-red-500/20 outline-none`}/></div>
+    <div><label className={`text-xs font-medium ${t2} mb-1.5 block`}>{l}</label><input type={tp} value={v||''} onChange={e=>on(e.target.value)} className={`w-full px-3 py-2.5 rounded-[var(--radius-input)] text-sm ${inp} border focus:border-[#ce3d1f] focus:ring-1 focus:ring-[#ce3d1f]/20 outline-none`}/></div>
   );
   const Select = ({l,v,on,opts}:{l:string;v:string;on:(v:string)=>void;opts:{v:string;l:string}[]}) => (
-    <div><label className={`text-xs font-medium ${t2} mb-1.5 block`}>{l}</label><select value={v} onChange={e=>on(e.target.value)} className={`w-full px-3 py-2.5 rounded-lg text-sm ${inp} border focus:border-red-500 outline-none`}>{opts.map(o=><option key={o.v} value={o.v}>{o.l}</option>)}</select></div>
+    <div><label className={`text-xs font-medium ${t2} mb-1.5 block`}>{l}</label><select value={v} onChange={e=>on(e.target.value)} className={`w-full px-3 py-2.5 rounded-[var(--radius-input)] text-sm ${inp} border focus:border-[#ce3d1f] outline-none`}>{opts.map(o=><option key={o.v} value={o.v}>{o.l}</option>)}</select></div>
   );
 
   return (
     <div className={`min-h-screen ${bg}`}>
-      {/* HEADER */}
-      <header className={`border-b ${bd} ${dark?'bg-[#0a0a0f]/90':'bg-white/90'} backdrop-blur-xl sticky top-0 z-40`}>
+      {/* HEADER — brandkit RR */}
+      <header className={`border-b ${bd} ${dark?'bg-[#08080c]/80':'bg-white/80'} backdrop-blur-xl sticky top-0 z-40`}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.svg" alt="RR" className="w-9 h-9 rounded-lg"/>
-            <div><h1 className={`text-sm font-bold ${t}`}>RR ALIADOS</h1><p className={`text-[10px] ${t3}`}>Finanzas · corte {CORTE_ACTUAL} · disponible {fmt(CAJA_REAL_ACTUAL)} · a pagar 31/08 {fmt(990000)}</p></div>
+            <img src="/logo.svg" alt="RR" className="w-10 h-10 rounded-xl shadow-lg ring-1 ring-[#ce3d1f]/40"/>
+            <div>
+              <h1 className={`text-sm font-extrabold tracking-tight ${t}`}>RR<span className="text-[#ce3d1f]">ALIADOS</span></h1>
+              <p className="text-[10px] text-[#8a8778] font-medium">Finanzas · corte {CORTE_ACTUAL}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {dbSource === 'supabase' && dbSnapshot && (
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-1 rounded-lg text-[10px] font-semibold bg-green-500/20 text-green-400">Supabase</span>
+              <div className="hidden md:flex items-center gap-2">
+                <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/20">Supabase</span>
                 <span className={`px-2 py-1 rounded-lg text-[10px] ${t3}`} title={`Snapshot ${dbSnapshot.synced_at || ''} · hash ${dbSnapshot.source_hash || '—'}`}>
                   sync {fmtDate(String(dbSnapshot.synced_at || '').slice(0, 10))}
-                  {dbSnapshot.source_hash ? ` · hash ${String(dbSnapshot.source_hash).slice(0, 8)}` : ''}
                 </span>
               </div>
             )}
-            <Link href="/crm" className="px-3 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10">CRM</Link>
-            <label className="px-3 py-2 rounded-xl text-xs font-semibold bg-blue-500/20 text-blue-300 cursor-pointer hover:bg-blue-500/30">
+            <Link href="/crm" className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#f5ede1] transition-colors">CRM</Link>
+            <Link href="/cuentas-cobro" className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#ce3d1f]/15 text-[#e7785e] hover:bg-[#ce3d1f]/25 transition-colors">Cuentas</Link>
+            <Link href="/documentos" className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#f5ede1] transition-colors">Documentos</Link>
+            <label className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#3f0035]/40 text-[#e8c069] cursor-pointer hover:bg-[#3f0035]/60 border border-[#3f0035]/40 transition-colors">
               Sync Excel
               <input type="file" accept=".xlsx,.xls" className="hidden" onChange={async (e) => {
                 const f = e.target.files?.[0];
@@ -382,17 +462,17 @@ export default function Dashboard() {
                 if (snap) setDbSnapshot(snap);
               }} />
             </label>
-            <button onClick={exportExcel} className="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-green-500 to-green-600 text-white btn-press shadow-lg shadow-green-500/20">Exportar Excel</button>
+            <button onClick={exportExcel} className="rr-btn-primary px-4 py-2 rounded-xl text-xs font-bold">Exportar Excel</button>
             <button onClick={()=>setDark(!dark)} className={`p-2.5 rounded-xl btn-press ${dark?'bg-white/5':'bg-gray-100'}`}>{dark?'☀️':'🌙'}</button>
           </div>
         </div>
       </header>
 
       {/* TABS */}
-      <div className={`border-b ${bd} sticky top-[53px] z-30 glass ${dark?'bg-[#0a0a0f]/80':'bg-white/80'}`}>
+      <div className={`border-b ${bd} sticky top-[53px] z-30 glass ${dark?'bg-[#08080c]/80':'bg-white/80'}`}>
         <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
-          {([['resumen','Resumen'],['proyectos','Proyectos'],['servicios','Servicios'],['movimientos','Movimientos'],['pagos','Pagos'],['calendario','Calendario'],['brechas','Brechas']] as [string,string][]).map(([k,l])=>(
-            <button key={k} onClick={()=>setTab(k as typeof tab)} className={`px-4 py-3 text-xs font-medium border-b-2 whitespace-nowrap tab-indicator ${tab===k?'active text-red-400':`border-transparent ${t2} hover:${t}`}`}>{l}</button>
+          {([['resumen','Resumen'],['gastos','Gastos'],['proyectos','Proyectos'],['servicios','Servicios'],['movimientos','Movimientos'],['pagos','Pagos'],['calendario','Calendario'],['brechas','Brechas']] as [string,string][]).map(([k,l])=>(
+            <button key={k} onClick={()=>setTab(k as typeof tab)} className={`px-4 py-3 text-xs font-medium border-b-2 whitespace-nowrap tab-indicator ${tab===k?'active text-[#e7785e]':`border-transparent ${t2} hover:${t}`}`}>{l}</button>
           ))}
         </div>
       </div>
@@ -400,42 +480,46 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* RESUMEN */}
         {tab==='resumen' && <>
-          <div className={`${card} border border-red-500/40 rounded-2xl p-5 mb-6 bg-red-500/[0.06]`}>
-            <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-red-400 font-semibold mb-1">Pagos del 31 de agosto 2026</p>
-                <p className={`text-sm ${t2}`}>Comprometidos (Candilejas personal + quincena Manuel/Samuel). Edición/transporte son supuestos y no entran aquí.</p>
+          <div className="relative overflow-hidden rounded-[var(--radius-hero)] mb-6 p-[1px] bg-gradient-to-br from-[#3f0035] via-[#ce3d1f]/60 to-[#ce3d1f]">
+            <div className="rounded-[calc(var(--radius-hero)-1px)] p-5 md:p-6 bg-[#0b0b10]">
+              <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-[#ce3d1f]/15 blur-3xl pointer-events-none"></div>
+              <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-[#3f0035]/30 blur-3xl pointer-events-none"></div>
+              <div className="relative flex flex-wrap items-start justify-between gap-4 mb-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-[#e7785e] font-bold mb-1">Pagos del 31 de agosto 2026</p>
+                  <p className={`text-sm ${t2} max-w-md`}>Comprometidos (Candilejas personal + quincena Manuel/Samuel). Edición/transporte son supuestos y no entran aquí.</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl md:text-4xl font-extrabold tracking-tight text-[#e7785e] rr-num">{fmt(total31)}</p>
+                  <p className={`text-xs ${t3}`}>Caja tras pagar: <span className={cajaTras31 < 0 ? 'text-[#ef4444] font-semibold' : 'text-[#f5c518] font-semibold'}>{fmt(cajaTras31)}</span></p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className={`text-2xl font-bold text-red-400`}>{fmt(total31)}</p>
-                <p className={`text-xs ${t3}`}>Caja tras pagar: <span className={cajaTras31 < 0 ? 'text-red-400' : 'text-yellow-400'}>{fmt(cajaTras31)}</span></p>
+              {/* Desglose 31/08 + proyección semana urgente */}
+              <div className="relative grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+                <div className={`px-3 py-2.5 rounded-xl border ${bd} bg-white/[0.02]`}>
+                  <p className={`text-[9px] uppercase tracking-widest ${t3} mb-1`}>Candilejas · personal</p>
+                  <p className="text-base font-extrabold text-[#e7785e] rr-num">{fmt(candilejas31)}</p>
+                  <p className={`text-[9px] ${t3}`}>8 ítems comprometidos</p>
+                </div>
+                <div className={`px-3 py-2.5 rounded-xl border ${bd} bg-white/[0.02]`}>
+                  <p className={`text-[9px] uppercase tracking-widest ${t3} mb-1`}>Nómina · quincena 30/08</p>
+                  <p className="text-base font-extrabold text-[#e7785e] rr-num">{fmt(nomina31)}</p>
+                  <p className={`text-[9px] ${t3}`}>Manuel 200k + Samuel 100k</p>
+                </div>
+                <div className={`px-3 py-2.5 rounded-xl border ${bd} bg-white/[0.02]`}>
+                  <p className={`text-[9px] uppercase tracking-widest ${t3} mb-1`}>Semana urgente 31/08–05/09</p>
+                  <p className="text-base font-extrabold text-[#e8c069] rr-num">{fmt(total31 + supuestoMin)} – {fmt(total31 + supuestoMax)}</p>
+                  <p className={`text-[9px] ${t3}`}>comprometidos {fmt(total31)} + supuestos {fmt(supuestoMin)}–{fmt(supuestoMax)}</p>
+                </div>
               </div>
-            </div>
-            {/* Desglose 31/08 + proyección semana urgente */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
-              <div className={`px-3 py-2.5 rounded-xl border ${bd} bg-white/[0.02]`}>
-                <p className={`text-[9px] uppercase tracking-widest ${t3} mb-1`}>Candilejas · personal</p>
-                <p className="text-sm font-bold text-red-400">{fmt(candilejas31)}</p>
-                <p className={`text-[9px] ${t3}`}>8 ítems comprometidos</p>
+              <div className="relative grid grid-cols-1 md:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                {pagos31.map(p => (
+                  <button key={p.id} type="button" onClick={() => openModal('pago', p)} className={`text-left px-3 py-2 rounded-xl border ${bd} hover:bg-white/[0.04] flex justify-between gap-2`}>
+                    <span className={`text-xs ${t} truncate`}>{p.concepto}</span>
+                    <span className="text-xs font-bold text-[#e7785e] rr-num flex-shrink-0">{fmt(p.monto)}</span>
+                  </button>
+                ))}
               </div>
-              <div className={`px-3 py-2.5 rounded-xl border ${bd} bg-white/[0.02]`}>
-                <p className={`text-[9px] uppercase tracking-widest ${t3} mb-1`}>Nómina · quincena 30/08</p>
-                <p className="text-sm font-bold text-red-400">{fmt(nomina31)}</p>
-                <p className={`text-[9px] ${t3}`}>Manuel 200k + Samuel 100k</p>
-              </div>
-              <div className={`px-3 py-2.5 rounded-xl border ${bd} bg-white/[0.02]`}>
-                <p className={`text-[9px] uppercase tracking-widest ${t3} mb-1`}>Semana urgente 31/08–05/09</p>
-                <p className="text-sm font-bold text-red-400">{fmt(total31 + supuestoMin)} – {fmt(total31 + supuestoMax)}</p>
-                <p className={`text-[9px] ${t3}`}>comprometidos {fmt(total31)} + supuestos {fmt(supuestoMin)}–{fmt(supuestoMax)}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-              {pagos31.map(p => (
-                <button key={p.id} type="button" onClick={() => openModal('pago', p)} className={`text-left px-3 py-2 rounded-xl border ${bd} hover:bg-white/[0.04] flex justify-between gap-2`}>
-                  <span className={`text-xs ${t} truncate`}>{p.concepto}</span>
-                  <span className="text-xs font-bold text-red-400 flex-shrink-0">{fmt(p.monto)}</span>
-                </button>
-              ))}
             </div>
           </div>
           {cobrosPendientes.length > 0 && (
@@ -465,10 +549,26 @@ export default function Dashboard() {
             </div>
           )}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className={`${card} border ${bd} rounded-2xl p-5 card-hover animate-fadeInUp stagger-1`}><p className={`text-[10px] uppercase tracking-widest ${t3} mb-2`}>Disponible</p><p className={`text-2xl font-bold ${t}`}>{fmt(disp)}</p><p className={`text-xs ${t3}`}>Bancolombia · corte {CORTE_ACTUAL}</p></div>
-            <div className={`${card} border ${bd} rounded-2xl p-5 card-hover animate-fadeInUp stagger-2`}><p className={`text-[10px] uppercase tracking-widest ${t3} mb-2`}>Runway</p><p className={`text-2xl font-bold ${runway>=8?'text-green-400':runway>=4?'text-yellow-400':'text-red-400'}`}>{runway} meses</p><p className={`text-xs ${t3}`}>Burn {fmt(burn)}/mes</p></div>
-            <div className={`${card} border border-red-500/20 rounded-2xl p-5 card-hover animate-fadeInUp stagger-3`}><p className={`text-[10px] uppercase tracking-widest text-red-400 mb-2`}>A pagar 31/08</p><p className={`text-2xl font-bold text-red-400`}>{fmt(total31)}</p><p className={`text-xs ${t3}`}>{pagos31.length} ítems comprometidos</p></div>
-            <div className={`${card} border ${bd} rounded-2xl p-5 card-hover animate-fadeInUp stagger-4`}><p className={`text-[10px] uppercase tracking-widest ${t3} mb-2`}>Tras el 31</p><p className={`text-2xl font-bold ${cajaTras31<500000?'text-red-400':'text-yellow-400'}`}>{fmt(cajaTras31)}</p><p className={`text-xs ${t3}`}>Si se paga todo lo comprometido</p></div>
+            <div className="rr-card border border-[var(--border)] rounded-[var(--radius-card)] p-5 card-hover animate-fadeInUp stagger-1">
+              <p className={`text-[10px] uppercase tracking-widest ${t3} mb-2 font-bold`}>Disponible</p>
+              <p className="rr-kpi text-3xl">{fmt(disp)}</p>
+              <p className={`text-xs ${t3}`}>Bancolombia · corte {CORTE_ACTUAL}</p>
+            </div>
+            <div className="rr-card border border-[var(--border)] rounded-[var(--radius-card)] p-5 card-hover animate-fadeInUp stagger-2">
+              <p className={`text-[10px] uppercase tracking-widest ${t3} mb-2 font-bold`}>Runway</p>
+              <p className={`rr-num text-3xl font-extrabold tracking-tight ${runway>=8?'text-[#22c55e]':runway>=4?'text-[#f5c518]':'text-[#ef4444]'}`}>{runway}<span className="text-sm font-bold text-[#8a8778]"> meses</span></p>
+              <p className={`text-xs ${t3}`}>Burn {fmt(burn)}/mes</p>
+            </div>
+            <div className="rr-card border border-[#ce3d1f]/20 rounded-[var(--radius-card)] p-5 card-hover animate-fadeInUp stagger-3">
+              <p className="text-[10px] uppercase tracking-widest text-[#e7785e] mb-2 font-bold">A pagar 31/08</p>
+              <p className="rr-num text-3xl font-extrabold tracking-tight text-[#e7785e]">{fmt(total31)}</p>
+              <p className={`text-xs ${t3}`}>{pagos31.length} ítems comprometidos</p>
+            </div>
+            <div className="rr-card border border-[var(--border)] rounded-[var(--radius-card)] p-5 card-hover animate-fadeInUp stagger-4">
+              <p className={`text-[10px] uppercase tracking-widest ${t3} mb-2 font-bold`}>Tras el 31</p>
+              <p className={`rr-num text-3xl font-extrabold tracking-tight ${cajaTras31<500000?'text-[#ef4444]':'text-[#f5c518]'}`}>{fmt(cajaTras31)}</p>
+              <p className={`text-xs ${t3}`}>Si se paga todo lo comprometido</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className={`${card} border ${bd} rounded-2xl overflow-hidden`}>
@@ -533,9 +633,197 @@ export default function Dashboard() {
           )}
         </>}
 
+        {/* GASTOS — vista mensual clara */}
+        {tab==='gastos' && <>
+          <div className="mb-6">
+            <h2 className={`text-lg font-bold ${t}`}>Gastos mensuales</h2>
+            <p className={`text-xs ${t3} mt-1`}>Fijos recurrentes · estipulados (confirmados/comprometidos) · nuevos (supuestos/prospectos).</p>
+          </div>
+
+          {/* KPIs de gastos */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className={`${card} border ${bd} rounded-2xl p-5`}>
+              <p className={`text-[10px] uppercase tracking-widest ${t3} mb-2 font-bold`}>Fijos / mes</p>
+              <p className="rr-num text-3xl font-extrabold text-[#e7785e]">{fmt(totalFijosMes)}</p>
+              <p className={`text-xs ${t3}`}>nómina + suscripciones + hosting</p>
+            </div>
+            <div className={`${card} border ${bd} rounded-2xl p-5`}>
+              <p className={`text-[10px] uppercase tracking-widest ${t3} mb-2 font-bold`}>Estipulados</p>
+              <p className="rr-num text-3xl font-extrabold text-red-400">{fmt(totalEstipulado)}</p>
+              <p className={`text-xs ${t3}`}>{gastosEstipulados.length} ítems comprometidos/confirmados</p>
+            </div>
+            <div className={`${card} border ${bd} rounded-2xl p-5`}>
+              <p className={`text-[10px] uppercase tracking-widest ${t3} mb-2 font-bold`}>Nuevos (rango)</p>
+              <p className="rr-num text-3xl font-extrabold text-yellow-400">{fmt(totalNuevoMin)}–{fmt(totalNuevoMax)}</p>
+              <p className={`text-xs ${t3}`}>{gastosNuevos.length} supuestos/prospectos</p>
+            </div>
+            <div className={`${card} border ${bd} rounded-2xl p-5`}>
+              <p className={`text-[10px] uppercase tracking-widest ${t3} mb-2 font-bold`}>Caja disponible</p>
+              <p className="rr-num text-3xl font-extrabold text-green-400">{fmt(disp)}</p>
+              <p className={`text-xs ${t3}`}>tras fijos + estipulados: {fmt(disp - totalFijosMes - totalEstipulado)}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* 1) Gastos fijos mensuales */}
+            <div className={`${card} border ${bd} rounded-2xl overflow-hidden`}>
+              <div className={`p-4 border-b ${bd} flex items-center justify-between`}>
+                <h3 className={`text-sm font-semibold ${t}`}>💰 Fijos mensuales</h3>
+                <span className="px-2 py-1 rounded-lg text-[10px] font-semibold bg-blue-500/15 text-blue-400">recurrente</span>
+              </div>
+              <div className="divide-y divide-white/[0.04]">
+                {GASTOS_FIJOS_MENSUALES.map((g, i) => (
+                  <div key={i} className="px-4 py-3 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className={`text-xs font-medium ${t} truncate`}>{g.concepto}</p>
+                      <p className={`text-[10px] ${t3}`}>{g.frecuencia}</p>
+                    </div>
+                    <span className="text-xs font-bold text-[#e7785e] flex-shrink-0">{fmt(g.monto * (g.frecuencia === '2/mes' ? 2 : 1))}</span>
+                  </div>
+                ))}
+                <div className="px-4 py-3 bg-white/[0.02] flex items-center justify-between">
+                  <p className={`text-xs font-semibold ${t}`}>Total mensual</p>
+                  <p className="text-sm font-extrabold text-[#e7785e]">{fmt(totalFijosMes)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 2) Gastos estipulados */}
+            <div className={`${card} border ${bd} rounded-2xl overflow-hidden`}>
+              <div className={`p-4 border-b ${bd} flex items-center justify-between`}>
+                <h3 className={`text-sm font-semibold ${t}`}>📋 Estipulados / comprometidos</h3>
+                <span className="px-2 py-1 rounded-lg text-[10px] font-semibold bg-red-500/15 text-red-400">{gastosEstipulados.length}</span>
+              </div>
+              <div className="max-h-96 overflow-y-auto divide-y divide-white/[0.04]">
+                {gastosEstipulados.length === 0 && <p className={`px-4 py-6 text-xs ${t3}`}>Sin gastos estipulados pendientes.</p>}
+                {gastosEstipulados.map(p => (
+                  <div key={p.id} className="px-4 py-3 flex items-center gap-3 hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={()=>openModal('pago',p)}>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-medium ${t} truncate`}>{p.concepto}</p>
+                      <p className={`text-[10px] ${t3}`}>{fmtDate(p.fecha)}{p.proyecto_id ? ` · ${state.proyectos.find(x=>x.id===p.proyecto_id)?.nombre || p.proyecto_id}` : ''}</p>
+                    </div>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold flex-shrink-0 ${certezaColor(p.certeza)}`}>{p.certeza}</span>
+                    <span className="text-xs font-bold text-red-400 flex-shrink-0">{fmt(p.monto)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3) Gastos nuevos */}
+            <div className={`${card} border ${bd} rounded-2xl overflow-hidden`}>
+              <div className={`p-4 border-b ${bd} flex items-center justify-between`}>
+                <h3 className={`text-sm font-semibold ${t}`}>🆕 Nuevos / por decidir</h3>
+                <span className="px-2 py-1 rounded-lg text-[10px] font-semibold bg-yellow-500/15 text-yellow-400">{gastosNuevos.length}</span>
+              </div>
+              <div className="max-h-96 overflow-y-auto divide-y divide-white/[0.04]">
+                {gastosNuevos.length === 0 && <p className={`px-4 py-6 text-xs ${t3}`}>Sin gastos nuevos por decidir.</p>}
+                {gastosNuevos.map(p => {
+                  const min = p.monto_min ?? p.monto;
+                  const max = p.monto_max ?? p.monto;
+                  return (
+                    <div key={p.id} className="px-4 py-3 flex items-center gap-3 hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={()=>openModal('pago',p)}>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs font-medium ${t} truncate`}>{p.concepto}</p>
+                        <p className={`text-[10px] ${t3}`}>{fmtDate(p.fecha)} · rango {fmt(min)}–{fmt(max)}</p>
+                      </div>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold flex-shrink-0 ${certezaColor(p.certeza)}`}>{p.certeza || 'sin certeza'}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Gastos pagados (contexto histórico) */}
+          {gastosPagados.length > 0 && (
+            <div className={`${card} border ${bd} rounded-2xl overflow-hidden mt-5`}>
+              <div className={`p-4 border-b ${bd} flex items-center justify-between`}>
+                <h3 className={`text-sm font-semibold ${t}`}>✅ Pagados este corte</h3>
+                <span className="text-xs font-bold text-green-400">{fmt(totalPagado)}</span>
+              </div>
+              <div className="flex flex-wrap gap-2 p-4">
+                {gastosPagados.map(p => (
+                  <span key={p.id} className="px-2.5 py-1.5 rounded-lg text-[10px] bg-green-500/10 text-green-400 border border-green-500/20" title={fmtDate(p.fecha)}>{p.concepto.split(' - ')[0]} · {fmt(p.monto)}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* PAGOS POR PERSONA — confirmar cuánto se paga a cada colaborador + generar cuenta de cobro */}
+          <div className="mt-8">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h2 className={`text-lg font-bold ${t}`}>👤 Pagos por persona</h2>
+                <p className={`text-xs ${t3} mt-1`}>Total confirmado: <span className="font-bold text-[#e7785e]">{fmt(totalPersonas)}</span> · {personasPagos.length} colaboradores. Selecciona una persona para ver sus conceptos y generar su cuenta de cobro.</p>
+              </div>
+              {ccStatus && <span className={`text-xs font-medium px-3 py-1.5 rounded-lg ${ccStatus.startsWith('✅')?'bg-green-500/15 text-green-400':'bg-red-500/15 text-red-400'}`}>{ccStatus}</span>}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {/* Lista de personas con total */}
+              <div className={`${card} border ${bd} rounded-2xl overflow-hidden lg:col-span-1`}>
+                <div className={`p-4 border-b ${bd}`}><h3 className={`text-sm font-semibold ${t}`}>Colaboradores</h3></div>
+                <div className="max-h-[480px] overflow-y-auto divide-y divide-white/[0.04]">
+                  {personasPagos.map(p => (
+                    <button key={p.persona} type="button" onClick={() => { setPersonaSel(p.persona); setCcStatus(''); }}
+                      className={`w-full px-4 py-3 flex items-center justify-between gap-3 text-left transition-colors ${personaSel === p.persona ? 'bg-[#ce3d1f]/10 border-l-2 border-[#ce3d1f]' : 'hover:bg-white/[0.02]'}`}>
+                      <div className="min-w-0">
+                        <p className={`text-xs font-semibold ${t} truncate`}>{p.persona}</p>
+                        <p className={`text-[10px] ${t3}`}>{p.items.length} concepto{p.items.length !== 1 ? 's' : ''}</p>
+                      </div>
+                      <span className="text-xs font-bold text-[#e7785e] flex-shrink-0">{fmt(p.total)}</span>
+                    </button>
+                  ))}
+                  <div className="px-4 py-3 bg-white/[0.02] flex items-center justify-between">
+                    <p className={`text-xs font-semibold ${t}`}>Total</p>
+                    <p className="text-sm font-extrabold text-[#e7785e]">{fmt(totalPersonas)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detalle de la persona seleccionada + generar cuenta */}
+              <div className={`${card} border ${bd} rounded-2xl overflow-hidden lg:col-span-2`}>
+                <div className={`p-4 border-b ${bd} flex items-center justify-between`}>
+                  <h3 className={`text-sm font-semibold ${t}`}>{personaActual ? `Conceptos de ${personaActual.persona}` : 'Selecciona un colaborador'}</h3>
+                  {personaActual && <span className="text-sm font-extrabold text-[#e7785e]">{fmt(personaActual.total)}</span>}
+                </div>
+                {personaActual ? (
+                  <div className="p-4">
+                    <div className="space-y-2 mb-4">
+                      {personaActual.items.map((item, i) => (
+                        <div key={i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                          <div className="min-w-0">
+                            <p className={`text-xs font-medium ${t}`}>{item.concepto}</p>
+                            <p className={`text-[10px] ${t3}`}>{item.proyecto}</p>
+                          </div>
+                          <span className="text-xs font-bold text-[#e7785e] flex-shrink-0">{fmt(item.monto)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button type="button" onClick={() => generarCuentaCobro(personaActual)}
+                        className="rr-btn-primary px-5 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2">
+                        🧾 Generar cuenta de cobro
+                      </button>
+                      <Link href="/cuentas-cobro" className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#f5ede1] transition-colors">
+                        Ver cuentas de cobro →
+                      </Link>
+                    </div>
+                    <p className={`text-[10px] ${t3} mt-3`}>Genera la cuenta de cobro (número RR-CC), la guarda en la BD y descarga el PDF automáticamente.</p>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center">
+                    <p className={`text-sm ${t3}`}>👈 Haz clic en un colaborador para ver sus conceptos y generar su cuenta de cobro.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>}
+
         {/* PROYECTOS */}
         {tab==='proyectos' && <>
-          <div className="flex justify-between items-center mb-6"><h2 className={`text-lg font-bold ${t}`}>Proyectos · clientes + prospectos</h2><button onClick={()=>openModal('proyecto')} className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white btn-press shadow-lg shadow-red-500/20">+ Nuevo Proyecto</button></div>
+          <div className="flex justify-between items-center mb-6"><h2 className={`text-lg font-bold ${t}`}>Proyectos · clientes + prospectos</h2><button onClick={()=>openModal('proyecto')} className="rr-btn-primary px-4 py-2.5 rounded-xl text-xs font-bold">+ Nuevo Proyecto</button></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {state.proyectos.map(p=>(
               <div key={p.id} className={`${card} border ${bd} rounded-2xl p-6 card-hover`}>
@@ -597,7 +885,7 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-2">
               {dbMovSource === 'supabase' && <span className="px-2 py-1 rounded-lg text-[10px] font-semibold bg-green-500/20 text-green-400">Supabase</span>}
-              <button onClick={()=>openModal('movimiento')} className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white btn-press shadow-lg shadow-red-500/20">+ Nuevo</button>
+              <button onClick={()=>openModal('movimiento')} className="rr-btn-primary px-4 py-2.5 rounded-xl text-xs font-bold">+ Nuevo</button>
             </div>
           </div>
           <div className={`${card} border ${bd} rounded-2xl overflow-hidden`}>
@@ -636,7 +924,7 @@ export default function Dashboard() {
 
         {/* PAGOS */}
         {tab==='pagos' && <>
-          <div className="flex justify-between items-center mb-6"><h2 className={`text-lg font-bold ${t}`}>Pagos Programados</h2><button onClick={()=>openModal('pago')} className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white btn-press shadow-lg shadow-red-500/20">+ Nuevo</button></div>
+          <div className="flex justify-between items-center mb-6"><h2 className={`text-lg font-bold ${t}`}>Pagos Programados</h2><button onClick={()=>openModal('pago')} className="rr-btn-primary px-4 py-2.5 rounded-xl text-xs font-bold">+ Nuevo</button></div>
           <div className="flex flex-wrap items-center gap-2 mb-6">
             <span className={`text-xs ${t3}`}>Certeza:</span>
             {(['todos','confirmado','confiable','comprometido','supuesto','prospecto','historico'] as const).map(c => (
@@ -845,7 +1133,7 @@ export default function Dashboard() {
               )}
 
               <div className={`p-6 border-t ${bd}`}>
-                <button onClick={addPagoDesdeDia} className="w-full px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white btn-press shadow-lg shadow-red-500/20 hover:from-red-600 hover:to-red-700 transition-all">
+                <button onClick={addPagoDesdeDia} className="rr-btn-primary w-full px-4 py-3 rounded-xl text-sm font-bold">
                   + Agregar Pago
                 </button>
               </div>
@@ -901,7 +1189,7 @@ export default function Dashboard() {
               </>}
               <div className="flex gap-3 pt-2">
                 <button onClick={closeModal} className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium btn-press ${dark?'bg-white/5':'bg-gray-100'} ${t2}`}>Cancelar</button>
-                <button onClick={saveItem} className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white btn-press shadow-lg shadow-red-500/20">Guardar</button>
+                <button onClick={saveItem} className="rr-btn-primary flex-1 px-4 py-3 rounded-xl text-sm font-bold">Guardar</button>
               </div>
             </div>
           </div>

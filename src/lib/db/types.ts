@@ -78,3 +78,22 @@ export interface ProjectServiceRecord {
   created_at?: string;
   projects?: { nombre?: string | null } | null;
 }
+
+// Registro de un documento (contratos, facturas, cuentas de cobro, soportes...)
+// La verdad vive en el Drive (drive_path). La fila en Supabase es el índice/respaldo.
+export interface DocumentRecord {
+  id: string;
+  titulo: string;
+  tipo: string; // contrato | factura | cuenta_cobro | soporte | otro
+  proyecto?: string | null;
+  drive_path?: string | null;   // ruta canónica en el Drive (SSOT)
+  file_name?: string | null;    // nombre original si se subió el archivo
+  file_path?: string | null;
+  mime_type?: string | null;
+  size_bytes?: number | null;
+  version?: number | null;
+  estado?: string | null;       // borrador | vigente | reemplazado | anulado
+  notas?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}

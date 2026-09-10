@@ -143,3 +143,34 @@ Validar build, desplegar el proyecto `rr-finanzas` en Vercel y después conectar
 ---
 
 *Actualización añadida: 30/08/2026.*
+
+---
+
+## Sesión 30/08/2026 — cuentas de cobro masivas
+
+Se agregó el módulo administrativo `/cuentas-cobro` para preparar cuentas de cobro en lote dentro de RR Finanzas.
+
+### Funcionalidad
+- Selección de persona existente o creación de una persona nueva.
+- Captura de nombre, documento, correo, teléfono, banco, tipo/número de cuenta, concepto, monto, periodo, fecha, responsable y proyecto opcional.
+- Plantillas reutilizables para producción Candilejas y roles de sesión.
+- Previsualización con branding RR.
+- Descarga de PDF con número y versión.
+- Registro en Supabase si `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` están configuradas; modo local si faltan credenciales.
+
+### Seguridad
+- Si `RR_ADMIN_TOKEN` existe, las APIs exigen header `x-rr-admin-token`.
+- Los PDFs se entregan con `cache-control: no-store` y no se publican por URL.
+- La migración habilita RLS y no crea policies públicas.
+- Samuel García y Estefanía quedan marcados como candidatos que requieren validación; no fusionar identidad solo por nombre.
+
+### Base de datos
+- Migración no destructiva: `supabase/migrations/20260830_cuentas_cobro.sql`.
+- Tablas: `personas_cobro`, `cuentas_cobro`, `document_audit_log`.
+- Cada cuenta conserva número, versión, estado, persona, proyecto, monto, fecha, responsable y ruta privada sugerida.
+
+### Pendiente antes de producción
+- Backup Supabase antes de aplicar la migración.
+- Probar migración en staging.
+- Definir `RR_ADMIN_TOKEN` en Vercel.
+- Conectar almacenamiento privado para guardar PDFs emitidos versionados.
