@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Download, FileText, Plus, Save, ShieldCheck, Trash2, User, Banknote, ChevronLeft } from 'lucide-react';
 import type { CuentaCobroPayload, CuentaCobroTemplate, PersonaCobro } from '@/lib/cuentas-cobro/types';
 import { DECLARACION_NO_SUBCONTRATACION } from '@/lib/cuentas-cobro/types';
+import { nombreArchivoCuentaCobro } from '@/lib/cuentas-cobro/filename';
 
 const COP = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 const hoy = () => new Date().toISOString().slice(0, 10);
@@ -318,7 +319,7 @@ export default function CuentasCobroPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${payloadPdf.numero || 'RR-CC'}-v${payloadPdf.version || 1}.pdf`;
+      a.download = nombreArchivoCuentaCobro(payloadPdf);
       a.style.display = 'none';
       document.body.appendChild(a);
       a.click();

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { buildCuentaCobroPdf } from '@/lib/cuentas-cobro/pdf';
 import type { CuentaCobroPayload } from '@/lib/cuentas-cobro/types';
+import { nombreArchivoCuentaCobro } from '@/lib/cuentas-cobro/filename';
 
 const requireAdmin = (request: NextRequest) => {
   const token = process.env.RR_ADMIN_TOKEN;
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
 
   const payload = (await request.json()) as CuentaCobroPayload;
   const pdf = await buildCuentaCobroPdf(payload);
-  const filename = `${payload.numero || 'RR-CC-BORRADOR'}-v${payload.version || 1}.pdf`;
+  const filename = nombreArchivoCuentaCobro(payload);
 
   return new NextResponse(new Uint8Array(pdf), {
     headers: {
