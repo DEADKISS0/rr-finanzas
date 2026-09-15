@@ -7,6 +7,10 @@ const MESES = [
 
 /** Nombre oficial del PDF descargable de una cuenta de cobro. */
 export const nombreArchivoCuentaCobro = (payload: Partial<CuentaCobroPayload>): string => {
+  const nombre = (payload.persona?.nombre || 'Sin nombre')
+    .trim()
+    .replace(/[\\/:*?"<>|]/g, '')
+    .replace(/\s+/g, ' ');
   const periodo = payload.periodo || '';
   const periodoNormalizado = periodo.toLocaleLowerCase('es-CO');
   const indiceMes = MESES.findIndex((mes) => periodoNormalizado.includes(mes.toLocaleLowerCase('es-CO')));
@@ -17,5 +21,5 @@ export const nombreArchivoCuentaCobro = (payload: Partial<CuentaCobroPayload>): 
   const consecutivo = payload.numero?.match(/(\d+)\s*$/)?.[1] || '0';
   const numero = consecutivo.padStart(4, '0');
 
-  return `CC - ${MESES[indiceMesFinal]} - ${anio} - ${numero}.pdf`;
+  return `CC - ${nombre} - ${MESES[indiceMesFinal]} - ${anio} - ${numero}.pdf`;
 };
