@@ -1,42 +1,45 @@
 @import "tailwindcss";
 
 /* ============================================================
-   BRANDKIT RR — Brutalismo Estratégico Colombiano
-   Un solo acento re-teñible (--primary). NUNCA hardcodear un
-   color de marca fuera de estos tokens si queremos que el
-   selector de tema siga funcionando.
+   BRANDKIT RR — Brutalismo Estratégico Colombiano (ACTUALIZADO)
+   Colores definidos según identidad RR: 
+   - Negro: #070001
+   - Fucsia: #BE076D  
+   - Mostaza: #DED116
+   - Orquídea: #973D8F
+   - Blanco cálido: #FFFFF3
    ============================================================ */
 :root {
-  /* Superficies */
-  --background: #08080c;            /* negro profundo cimiento */
-  --foreground: #f5ede1;            /* pergamino / blanco cálido RR */
-  --card: #0f0f15;                  /* panel elevado */
-  --card-foreground: #f5ede1;
-  --muted: #14141b;                 /* fondo tenue */
-  --muted-foreground: #8a8778;      /* texto secundario cálido */
+  /* Superficies - Adaptadas a identidad RR */
+  --background: #070001;            /* negro profundo RR */
+  --foreground: #FFFFF3;            /* blanco cálido RR */
+  --card: #0f0f1a;                  /* panel elevado (negro con toque fucsia) */
+  --card-foreground: #FFFFF3;
+  --muted: #100f15;                 /* fondo tenue */
+  --muted-foreground: #B3A99F;      /* texto secundario cálido */
 
-  /* Acento de marca — rojo/vino RR */
-  --primary: #ce3d1f;               /* rojo RR (identidad) */
-  --primary-foreground: #fff7ee;
-  --secondary: #3f0035;             /* vino profundo */
-  --secondary-foreground: #f5e6d3;
-  --accent: #ce3d1f;
-  --accent-foreground: #fff7ee;
-  --destructive: #ef4444;
+  /* Acento de marca - Paleta RR */
+  --primary: #BE076D;               /* fucsia RR (identidad) */
+  --primary-foreground: #FFFFF3;
+  --secondary: #973D8F;             /* orquídea RR */
+  --secondary-foreground: #FFFFF3;
+  --accent: #DED116;                /* mostaza RR */
+  --accent-foreground: #070001;
+  --destructive: #EF4444;
   --destructive-foreground: #ffffff;
 
   /* Contornos / focus */
-  --border: rgba(245, 237, 225, 0.08);
-  --input: rgba(245, 237, 225, 0.12);
-  --ring: #ce3d1f;
+  --border: rgba(255, 255, 255, 0.05);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #BE076D;
 
-  /* Semánticos */
+  /* Semánticos - Adaptados */
   --success: #22c55e;
   --warning: #f5c518;
   --gold: #e8c069;
 
   /* Glow = halo hover, alpha del acento */
-  --glow: rgba(206, 61, 31, 0.30);
+  --glow: rgba(190, 7, 109, 0.30);
 
   /* Radios por jerarquía */
   --radius-input: 10px;
@@ -129,7 +132,7 @@ body {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s var(--ease-out);
-  box-shadow: 0 0 0 1px rgba(206,61,31,0.35), 0 8px 40px -8px var(--glow);
+  box-shadow: 0 0 0 1px rgba(190,7,109,0.35), 0 8px 40px -8px var(--glow);
 }
 
 .rr-card:hover::before {
@@ -146,8 +149,8 @@ body {
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 0 1px rgba(206,61,31,0.30), 0 12px 40px -10px var(--glow);
-  border-color: rgba(206,61,31,0.45);
+  box-shadow: 0 0 0 1px rgba(190,7,109,0.30), 0 12px 40px -10px var(--glow);
+  border-color: rgba(190,7,109,0.45);
 }
 
 /* Botón primario con barrido de brillo (sheen) */
@@ -206,7 +209,7 @@ body {
 /* Focus ring visible en inputs (usar --ring) */
 input:focus, select:focus, textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--ring), 0 0 0 4px rgba(206,61,31,0.15);
+  box-shadow: 0 0 0 2px var(--ring), 0 0 0 4px rgba(190,7,109,0.15);
   border-color: var(--ring);
 }
 
@@ -221,7 +224,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Glow effect */
 .glow {
-  box-shadow: 0 0 20px rgba(206, 61, 31, 0.35);
+  box-shadow: 0 0 20px rgba(190, 7, 109, 0.35);
 }
 
 /* Animation for cards */
@@ -282,8 +285,8 @@ input:focus, select:focus, textarea:focus {
 /* Interactive background gradient — tinte de marca RR */
 .bg-gradient-interactive {
   background: 
-    radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(206, 61, 31, 0.05), transparent 40%),
-    radial-gradient(800px circle at 80% 20%, rgba(63, 0, 53, 0.10), transparent 50%);
+    radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(190, 7, 109, 0.05), transparent 40%),
+    radial-gradient(800px circle at 80% 20%, rgba(151, 61, 143, 0.10), transparent 50%);
 }
 
 /* Number counter animation */

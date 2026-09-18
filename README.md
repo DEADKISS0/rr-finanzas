@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RR Finanzas
 
-## Getting Started
+Centro financiero vivo de RR ALIADOS: caja, runway, cuentas de cobro, documentos y operación contable.
 
-First, run the development server:
+Este es el sistema financiero oficial de RR ALIADOS S.A.S., construido con Next.js, Supabase y Tailwind CSS, siguiendo la identidad visual del Brutalismo Estratégico Colombiano.
+
+## Estado Actual
+
+- **Status**: `core` (fuente principal de finanzas)
+- **Owner**: Finanzas RR
+- **Última actualización**: 2026-09-17
+- **Próximo paso**: Absorber lo útil de rr-finanzas-dashboard y chatbot/finanzas_app
+
+## Visión
+
+Ser el centro financiero único donde toda información de caja, runway, cuentas de cobro y operación contable ingresa o apunta desde aquí.
+
+## Tecnologías
+
+- **Framework**: Next.js 16 (App Router)
+- **Base de datos**: Supabase (PostgreSQL)
+- **Styling**: Tailwind CSS con tokens de marca RR
+- **Despliegue**: Vercel
+- **Autenticación**: NextAuth + Supabase
+- **Reportes**: Componentes personalizados con colores RR
+
+## Características
+
+- 📊 Dashboard financiero en tiempo real
+- 💰 Gestión de caja y runway
+- 📑 Sistema de cuentas de cobro automatizado
+- 📄 Gestión de documentos financieros
+- 🔗 Integración con módulos internos de RR
+- 🛡️ Seguridad de nivel empresarial (RLS en Supabase)
+
+## Empezando
+
+### Requisitos
+
+- Node.js >= 20
+- Cuenta de Supabase
+- Git
+
+### Instalación
+
+```bash
+git clone https://github.com/DEADKISS0/rr-finanzas.git
+cd rr-finanzas
+npm install
+```
+
+### Configuración de entorno
+
+Crea un archivo `.env.local` en la raíz con:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### Desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Abre http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Producción
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Estructura del Proyecto
 
-## Learn More
+```
+/app - Rutas Next.js (App Router)
+/components - Componentes reutilizables
+/lib - Lógica de negocio y conexiones
+/supabase - Migraciones y tipos
+/public - Assets estáticos
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Colores de Marca RR
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Negro**: `#070001` (fondo primario)
+- **Fucsia**: `#BE076D` (acento principal)
+- **Mostaza**: `#DED116` (acento secundario/alertas)
+- **Orquídea**: `#973D8F` (terciario)
+- **Blanco cálido**: `#FFFFF3` (texto sobre fondos oscuros)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Licencia
 
-## Deploy on Vercel
+Privado - Propiedad de RR ALIADOS S.A.S.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Actualizado como parte de la reorganización interna de desarrollos RR (2026-09-17)*
